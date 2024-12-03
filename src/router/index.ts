@@ -5,6 +5,7 @@ import ProjectsRegistry from  '@/views/ProjectsRegistry/ProjectsRegistry.vue'
 import Applications from '@/views/Applications/ApplicationsMain.vue'
 import Reports from '@/views/Reports/Reports.vue'
 import Dashboard from '@/views/Dashboard/Dashboard.vue'
+import Manual from '@/views/Manual/Manual.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,6 +39,11 @@ const router = createRouter({
       path: '/dashbord',
       name: 'dashbord',
       component: Dashboard
+    },
+    {
+      path: '/manual',
+      name: 'manual',
+      component: Manual
     }
    
   ],

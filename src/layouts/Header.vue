@@ -23,7 +23,9 @@ export default defineComponent({
                 </button>
             </div>
             <div class="header__tools_manual">
-                <button>Справочник</button>
+                <button>
+                    <router-link to="/manual">Справочник</router-link>
+                </button>
             </div>
         </div>
     </div>
@@ -78,6 +80,11 @@ export default defineComponent({
             cursor: pointer;
             font-size: 16px;
             padding: 14px 32px;
+
+            a{
+                color: black;
+                text-decoration: none;
+            }
         }
 
 
