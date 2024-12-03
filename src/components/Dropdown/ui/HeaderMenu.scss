@@ -1,9 +1,8 @@
-
 .dropdown__component {
 
     position: relative;
 
-    .dropdowm-button{
+    .dropdowm-button {
         background-color: transparent;
         border: none;
         color: black;
@@ -19,7 +18,35 @@
         }
     }
 
-    .dropdown-menu{
+    .dropdown-menu {
         position: absolute;
+        top: 50px;
+
+        ul {
+
+            background-color: white;
+            border-top: 1px solid black;
+            border-right: 1px solid black;
+            border-bottom: 1px solid black;
+            border-left: 1px solid black;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            border-bottom-right-radius: 30px;
+            border-bottom-left-radius: 30px;
+            padding: 10px 25px;
+            width: 170px;
+
+            li {
+
+                list-style: none;
+                padding: 10px 0px;
+
+                a {
+                    color: black;
+                    font-size: 16px;
+                    text-decoration: none;
+                }
+            }
+        }
     }
 }

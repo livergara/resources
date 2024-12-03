@@ -83,7 +83,7 @@ ul {
 
         a {
             color: black;
-            padding: 16px 24px;
+            padding: 17px 24px;
             text-decoration: none;
 
             &:hover {

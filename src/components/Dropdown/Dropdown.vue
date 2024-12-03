@@ -8,36 +8,24 @@ export default defineComponent({
             type: Array as () => { name: string, path: string }[],
             required: true,
         },
-        modelValue: {
-            type: String,
-            default: '',
-        },
         placeholder: {
             type: String,
             default: 'Выбирай'
         },
     },
-    setup(props, { emit }) {
+    setup(props) {
         const isOpen = ref(false);
-        const selectedOption = ref(props.modelValue);
 
         const toggleDropdown = () => {
             isOpen.value = !isOpen.value;
         };
 
-        const selectOption = (option: string) => {
-            selectedOption.value = option;
-            emit('update:modelValue', option);
-        };
-
-        const handleLinkClick = (option: string) => {
-            selectOption(option);
+        const handleLinkClick = (option: {name: string, path: string}) => {
             isOpen.value = false;
         }
 
         return {
             isOpen,
-            selectedOption,
             toggleDropdown,
             handleLinkClick,
         };
@@ -47,11 +35,11 @@ export default defineComponent({
 
 <template>
     <div class="dropdown__component" @click="toggleDropdown">
-        <button class="dropdowm-button">{{ selectedOption || placeholder }}</button>
+        <button class="dropdowm-button">{{ placeholder }}</button>
         <div class="dropdown-menu" v-if="isOpen">
             <ul>
                 <li class="dropdown-item" v-for="(option, menuOptions) in options" :key="menuOptions">
-                    <router-link :to="option.path" @click.native="handleLinkClick(option.name)">
+                    <router-link :to="option.path" @click.stop="handleLinkClick(option)">
                         {{ option.name }}
                     </router-link>
                 </li>
