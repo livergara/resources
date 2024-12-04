@@ -35,6 +35,7 @@ export default defineComponent({
 .header {
     display: flex;
     justify-content: space-between;
+    margin-bottom: 40px;
 
     .header__logo h3 {
         background-color: black;

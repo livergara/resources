@@ -1,0 +1,44 @@
+.datatable__component{
+
+    table{
+
+        border-collapse: collapse;
+        width: 100%;
+
+        thead{
+
+            background-color: #B2C541;
+
+            tr{
+
+                th{
+                    color: white;
+                    padding: 15px 10px;
+                    text-align: left;
+                    
+
+                    &:first-child{
+                        border-radius: 40px 0px 0px 0px;
+                    }
+
+                    &:last-child{
+                        border-radius: 0px 40px 0px 0px;
+                    }
+                }
+            }
+        }
+
+        tbody{
+
+            td{
+
+                padding: 20px 10px;
+            }
+        }
+    }
+
+    .pagination-controls{
+        display: flex;
+        justify-content: center;
+    }
+}
