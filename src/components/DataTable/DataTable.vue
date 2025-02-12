@@ -1,9 +1,6 @@
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue';
 
-export interface RowData {
-    [key: string] : string | number | boolean;
-}
 
 export default defineComponent({
     name: 'DataTable',
@@ -13,6 +10,7 @@ export default defineComponent({
             required: true,
         },
         data: {
+            // @ts-ignore
             type: Array as () => RowData[],
             required: true,
         },
@@ -58,28 +56,44 @@ export default defineComponent({
 </script>
 
 <template>
-<div class="datatable__component">
-    <table>
-        <thead>
-            <tr>
-                <th v-for="(tableheader, thead) in headers" :key="thead">{{ tableheader }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="(tablerow, rowIndex) in paginatedData" :key="rowIndex">
-                <td v-for="(value, colIndex) in tablerow" :key="colIndex">{{ value }}</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="datatable__component">
+        <table>
+            <thead>
+                <tr>
+                    <th v-for="(tableheader, thead) in headers" :key="thead">{{ tableheader }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(tablerow, rowIndex) in paginatedData" :key="rowIndex">
+                    <td v-for="(value, colIndex) in tablerow" :key="colIndex">{{ value }}</td>
+                </tr>
+            </tbody>
+        </table>
 
-    <div class="pagination-controls">
-        <button @click="previousPage" :disabled="currentPage === 1">Назад</button>
-        <span>Страница {{ currentPage }} из {{ totalPages }}</span>
-        <button @click="nextPage" :disabled="currentPage === totalPages">Вперед</button>
+        <!-- TODO: Вынести пагинацию компонентом -->
+        <div class="pagination-controls">
+            <button @click="previousPage" :disabled="currentPage === 1"><img src="../../assets/icons/arrow-left.svg"
+                    alt=""></button>
+            <span> {{ currentPage }}</span>
+            <button @click="nextPage" :disabled="currentPage === totalPages"><img
+                    src="../../assets/icons/arrow-right.svg" alt=""></button>
+        </div>
     </div>
-</div>
 </template>
 
 <style lang="scss" scoped>
-@use './ui/ResourceRegistry.scss'
+@use './ui/ResourceRegistry.scss';
+@use './ui/ProjectsRegistry.scss';
+
+// Стили от пагинации
+.pagination-controls{
+    margin-top: 20px;
+}
+
+button{
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
 </style>

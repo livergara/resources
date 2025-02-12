@@ -7,9 +7,9 @@ export default defineComponent({
 </script>
 
 <template>
-    <h1>Журнал заявок</h1>
+    <div class="main-container">
+        <h1>Журнал заявок</h1>
+    </div>
 </template>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

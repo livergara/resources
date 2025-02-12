@@ -82,14 +82,14 @@ ul {
         list-style: none;
 
         a {
-            color: black;
-            padding: 17px 24px;
+            color: #003274;
+            display: block;
+            height: 50px;
+            padding: 16px 20px;
             text-decoration: none;
 
             &:hover {
-                background-color: black;
-                border-radius: 50px;
-                color: white;
+                border-bottom: 2px solid #003274;
             }
         }
 

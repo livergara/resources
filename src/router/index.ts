@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import CalendarResourcePlan from '@/views/CalendarResourcePlan.vue'
 import ResourceRegistry from '@/views/ResourceRegistry/ResourceRegistry.vue'
+import CreateResource from '@/views/ResourceRegistry/CreateResource.vue'
+import ViewResource from '@/views/ResourceRegistry/ViewResource.vue'
 import ProjectsRegistry from  '@/views/ProjectsRegistry/ProjectsRegistry.vue'
 import Applications from '@/views/Applications/ApplicationsMain.vue'
 import Reports from '@/views/Reports/Reports.vue'
@@ -19,6 +21,16 @@ const router = createRouter({
       path: '/resource-registry',
       name: 'resource-registry',
       component: ResourceRegistry
+    },
+    {
+      path: '/resource-registry/create',
+      name: 'resource-registry-create',
+      component: CreateResource
+    },
+    {
+      path: '/resource-registry/:resourceId',
+      name: 'resource-view',
+      component: ViewResource
     },
     {
       path: '/projects-registry',

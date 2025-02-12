@@ -11,6 +11,7 @@ export default defineComponent({
 <template>
     <div class="header">
         <div class="header__logo">
+            <img src="../assets/icons/logo.svg" alt="">
             <h3>Управление загрузкой ресурсов</h3>
         </div>
         <div class="header__menu">
@@ -24,7 +25,7 @@ export default defineComponent({
             </div>
             <div class="header__tools_manual">
                 <button>
-                    <router-link to="/manual">Справочник</router-link>
+                    <router-link to="/manual"><img src="../assets/icons/manual.svg" alt=""></router-link>
                 </button>
             </div>
         </div>
@@ -33,40 +34,48 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .header {
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 15, 116, 0.25);
     display: flex;
     justify-content: space-between;
-    margin-bottom: 40px;
+    padding: 35px;
 
-    .header__logo h3 {
-        background-color: black;
-        border-radius: 50px;
-        color: white;
-        font-size: 16px;
-        font-weight: normal;
-        margin: 0;
-        padding: 15px 32px;
+    .header__logo {
+        align-items: center;
+        display: flex;
+
+        img{
+            width: 43px;
+        }
+
+        h3 {
+            color: #003274;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+            padding-left: 10px;
+        }
     }
 
-    .header__menu{
+    .header__menu {
         align-items: center;
-        border: 1px solid black;
-        border-radius: 50px;
         display: flex;
     }
 
     .header__tools {
+        align-items: center;
         display: flex;
         gap: 20px;
 
         .header__tools_notifications button {
             background: none;
-            border: 1px solid black;
+            border: none;
             border-radius: 50px;
             padding: 0px;
 
             img {
                 cursor: pointer;
-                padding: 9px 11px;
+                padding: 7px 9px;
 
                 &:hover {
                     transform: rotate(325deg);
@@ -74,16 +83,17 @@ export default defineComponent({
             }
         }
 
-        .header__tools_manual button{
+        .header__tools_manual button {
             background: none;
-            border: 1px solid black;
+            border: none;
             border-radius: 50px;
             cursor: pointer;
+            font-family: 'Times New Roman', Times, serif;
             font-size: 16px;
-            padding: 14px 32px;
+            padding: 7px 9px;
 
-            a{
-                color: black;
+            a {
+                color: #003274;
                 text-decoration: none;
             }
         }

@@ -1,0 +1,4020 @@
+var Rr = Object.defineProperty;
+var Fr = (t, r, l) => r in t ? Rr(t, r, { enumerable: !0, configurable: !0, writable: !0, value: l }) : t[r] = l;
+var Ot = (t, r, l) => (Fr(t, typeof r != "symbol" ? r + "" : r, l), l);
+import { h as at, defineComponent as Le, toRefs as Ze, computed as G, ref as H, onMounted as Et, resolveComponent as Ae, openBlock as C, createBlock as x, createElementBlock as F, mergeProps as bn, createCommentVNode as z, renderSlot as Be, reactive as Dr, watchEffect as qr, onUnmounted as wr, watch as de, Teleport as Ur, createElementVNode as ne, normalizeClass as ve, normalizeStyle as gr, createVNode as Me, withCtx as _r, createTextVNode as kt, toDisplayString as Ce, inject as Hr, onBeforeUnmount as Wr, provide as Qr, resolveDynamicComponent as Re, withModifiers as ft, toRef as wn, nextTick as Or, Fragment as Zt, renderList as Yt, KeepAlive as Kr, toHandlers as zr, onDeactivated as Jr } from "vue";
+const Jt = {};
+function Xr(t) {
+  return Object.keys(t).reduce((r, l) => (t[l] !== !1 && t[l] !== null && t[l] !== void 0 && (r[l] = t[l]), r), {});
+}
+const Zr = {
+  name: "InlineSvg",
+  inheritAttrs: !1,
+  render() {
+    return this.svgElSource ? at(
+      "svg",
+      Object.assign(
+        {},
+        // source attrs
+        this.getSvgAttrs(this.svgElSource),
+        // component attrs and listeners
+        Xr(this.$attrs),
+        // content
+        { innerHTML: this.getSvgContent(this.svgElSource) }
+      )
+    ) : null;
+  },
+  props: {
+    src: {
+      type: String,
+      required: !0
+    },
+    title: {
+      type: String
+    },
+    transformSource: {
+      type: Function,
+      default: (t) => t
+    },
+    keepDuringLoading: {
+      type: Boolean,
+      default: !0
+    }
+  },
+  emits: ["loaded", "unloaded", "error"],
+  data() {
+    return {
+      /** @type {SVGElement} */
+      svgElSource: null,
+      /** @type {XMLHttpRequest} */
+      request: void 0
+    };
+  },
+  watch: {
+    src(t) {
+      this.getSource(t);
+    }
+  },
+  mounted() {
+    this.getSource(this.src);
+  },
+  methods: {
+    getSvgAttrs(t) {
+      let r = {};
+      const l = t.attributes;
+      if (!l)
+        return r;
+      for (let u = l.length - 1; u >= 0; u--)
+        r[l[u].name] = l[u].value;
+      return r;
+    },
+    getSvgContent(t) {
+      return t = t.cloneNode(!0), t = this.transformSource(t), this.title && Yr(t, this.title), t.innerHTML;
+    },
+    /**
+     * Get svgElSource
+     * @param {string} src
+     */
+    getSource(t) {
+      Jt[t] || (Jt[t] = this.download(t)), this.svgElSource && Jt[t].getIsPending() && !this.keepDuringLoading && (this.svgElSource = null, this.$emit("unloaded")), Jt[t].then((r) => {
+        this.svgElSource = r, this.$nextTick(() => {
+          this.$emit("loaded", this.$el);
+        });
+      }).catch((r) => {
+        this.svgElSource && (this.svgElSource = null, this.$emit("unloaded")), delete Jt[t], this.$emit("error", r);
+      });
+    },
+    /**
+     * Get the contents of the SVG
+     * @param {string} url
+     * @returns {PromiseWithState<Element>}
+     */
+    download(t) {
+      return xr(new Promise((r, l) => {
+        const u = new XMLHttpRequest();
+        u.open("GET", t, !0), this.request = u, u.onload = () => {
+          if (u.status >= 200 && u.status < 400)
+            try {
+              let d = new DOMParser().parseFromString(u.responseText, "text/xml").getElementsByTagName("svg")[0];
+              d ? r(d) : l(new Error('Loaded file is not valid SVG"'));
+            } catch (c) {
+              l(c);
+            }
+          else
+            l(new Error("Error loading SVG"));
+        }, u.onerror = l, u.send();
+      }));
+    }
+  }
+};
+function Yr(t, r) {
+  const l = t.getElementsByTagName("title");
+  if (l.length)
+    l[0].textContent = r;
+  else {
+    const u = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    u.textContent = r, t.insertBefore(u, t.firstChild);
+  }
+}
+function xr(t) {
+  if (t.getIsPending)
+    return t;
+  let r = !0, l = t.then(
+    (u) => (r = !1, u),
+    (u) => {
+      throw r = !1, u;
+    }
+  );
+  return l.getIsPending = function() {
+    return r;
+  }, l;
+}
+const Xe = {
+  registerComponentsGlobal: !1,
+  getIconUrl(t) {
+    return `${window.location.origin}/icons/${t}.svg`;
+  },
+  defaultIconSize: 16,
+  emptyValuePlaceholder: "—"
+}, ea = Le({
+  name: "GaIcon",
+  components: {
+    InlineSvg: Zr
+  },
+  props: {
+    /**
+     * Имя файла svg (без расширения), ссылка на файл определяется при настройке плагина в методе getIconUrl
+     */
+    icon: {
+      type: String,
+      required: !0
+    },
+    /**
+     * Цвет иконки, принимает любое валидное значение для css-свойства fill
+     */
+    fill: {
+      type: String,
+      default: "inherit"
+    },
+    /**
+     * Размер иконки в пикселях. Например: 12, 16, 24
+     */
+    size: {
+      type: [String, Number],
+      default: Xe.defaultIconSize
+    }
+  },
+  setup(t) {
+    const { icon: r, fill: l } = Ze(t), u = G(() => Xe.getIconUrl(r.value)), c = H(!1);
+    Et(() => c.value = !0);
+    function h(d) {
+      if (d) {
+        d.setAttribute("fill", `${l.value}`);
+        for (const o of d.children)
+          h(o);
+      }
+      return d;
+    }
+    return {
+      iconUrl: u,
+      recursivelyChangeFill: h
+    };
+  }
+}), Ne = (t, r) => {
+  const l = t.__vccOpts || t;
+  for (const [u, c] of r)
+    l[u] = c;
+  return l;
+};
+function ta(t, r, l, u, c, h) {
+  const d = Ae("inline-svg");
+  return C(), x(d, {
+    class: "ga-icon",
+    src: t.iconUrl,
+    width: t.size,
+    height: t.size,
+    fill: t.fill,
+    "transform-source": t.recursivelyChangeFill
+  }, null, 8, ["src", "width", "height", "fill", "transform-source"]);
+}
+const Fe = /* @__PURE__ */ Ne(ea, [["render", ta]]), na = Le({
+  name: "GaButton",
+  components: { GaIcon: Fe },
+  props: {
+    theme: {
+      type: String,
+      default: "primary"
+    },
+    icon: {
+      type: String,
+      default: null
+    },
+    iconPostfix: {
+      type: String,
+      default: null
+    },
+    round: {
+      type: Boolean,
+      default: !1
+    },
+    iconSize: {
+      type: Number,
+      default: 16
+    },
+    disabled: {
+      type: Boolean,
+      default: !1
+    }
+  }
+}), ra = ["disabled"];
+function aa(t, r, l, u, c, h) {
+  const d = Ae("GaIcon");
+  return C(), F("button", bn({
+    class: ["ga-button", t.theme, { round: t.round, disabled: t.disabled }]
+  }, t.$attrs, { disabled: t.disabled }), [
+    t.icon ? (C(), x(d, {
+      key: 0,
+      icon: t.icon,
+      size: t.iconSize
+    }, null, 8, ["icon", "size"])) : z("", !0),
+    Be(t.$slots, "default"),
+    t.iconPostfix ? (C(), x(d, {
+      key: 1,
+      icon: t.iconPostfix,
+      size: t.iconSize
+    }, null, 8, ["icon", "size"])) : z("", !0)
+  ], 16, ra);
+}
+const la = /* @__PURE__ */ Ne(na, [["render", aa]]);
+function pr(t) {
+  return typeof t == "object" && t !== null && !Array.isArray(t);
+}
+function _n(t) {
+  return typeof t == "string";
+}
+function he(t) {
+  return typeof t == "number";
+}
+function oa(t) {
+  return typeof t == "boolean";
+}
+function te(t) {
+  return _n(t) && t.length > 0;
+}
+function ke(t) {
+  return typeof t == "function";
+}
+function ia(t) {
+  return t instanceof Promise;
+}
+function yn(t = null) {
+  return JSON.parse(JSON.stringify(t));
+}
+let sa = 0;
+function Ye(t = "ga-component-") {
+  return `${t}_${sa++}`;
+}
+var Er = /* @__PURE__ */ ((t) => (t.dialog = "dialog", t.popup = "popup", t))(Er || {});
+const Xt = Dr({}), mr = G(
+  () => Object.values(Xt).sort((t, r) => t.position > r.position ? 1 : -1)
+), $r = "ga-modal-wrapper";
+function ua() {
+  let t = Vr();
+  t === null && (t = document.createElement("div"), t.id = $r, document.body.appendChild(t));
+}
+function ca() {
+  const t = Vr();
+  t !== null && document.body.removeChild(t);
+}
+function Vr() {
+  return document.body.children.namedItem($r) ?? null;
+}
+qr(() => {
+  mr.value.length === 0 && ca();
+});
+function da(t) {
+  ua();
+  const r = t.id;
+  return Object.assign(Xt, {
+    [r]: {
+      ...t,
+      position: mr.value.length
+    }
+  }), wr(() => {
+    delete Xt[r], mr.value.forEach((l, u) => {
+      Xt[l.id].position = u;
+    });
+  }), {
+    modalWrapperId: $r,
+    modalMap: Xt
+  };
+}
+function Lt(t) {
+  return G(() => {
+    if (he(t.value))
+      return t.value;
+    if (te(t.value)) {
+      const r = parseInt(t.value);
+      return isNaN(r) ? null : r;
+    }
+    return null;
+  });
+}
+const dt = {
+  default: "Некоректное значение",
+  required: "Поле не заполнено",
+  email: "Некорректный email",
+  min: "Поле должно быть больше либо равно",
+  max: "Поле должно быть меньше либо равно",
+  minLength: "Длина поля должна быть больше",
+  maxLength: "Длина поля должна быть меньше",
+  requiredCheckbox: "Выбор обязателен"
+};
+function An(t = { min: null }) {
+  function r(o) {
+    return typeof o > "u" || o === null || (Array.isArray(o) || typeof o == "string") && o.length === 0 ? dt.required : null;
+  }
+  function l(o) {
+    return typeof o == "string" && // eslint-disable-next-line max-len
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(o) ? null : dt.email;
+  }
+  function u(o) {
+    const { min: f } = yn(t);
+    return he(o) && he(f) && o >= f ? null : `${dt.min} ${f}`;
+  }
+  function c(o) {
+    const { max: f } = yn(t ?? {});
+    return he(o) ? he(f) && o <= f ? null : `${dt.max} ${f}` : null;
+  }
+  function h(o) {
+    const { minLength: f } = yn(t ?? {});
+    return he(f) && (typeof o == "string" || Array.isArray(o)) && o.length >= f ? null : `${dt.minLength} ${f}`;
+  }
+  function d(o) {
+    const { maxLength: f } = yn(t ?? {});
+    return o === null || he(f) && (typeof o == "string" || Array.isArray(o)) && o.length <= f ? null : `${dt.maxLength} ${f}`;
+  }
+  return {
+    required: r,
+    email: l,
+    min: u,
+    max: c,
+    minLength: h,
+    maxLength: d
+  };
+}
+const fa = Le({
+  name: "GaPopup",
+  components: { GaIcon: Fe },
+  props: {
+    visible: {
+      type: Boolean,
+      default: !1
+    },
+    target: {
+      type: [HTMLElement, String],
+      default: null
+    },
+    name: {
+      type: String,
+      default: null
+    },
+    offset: {
+      type: Number,
+      default: 10
+    },
+    showPointer: {
+      type: Boolean,
+      default: !1
+    },
+    position: {
+      type: String,
+      default: "bottom"
+    },
+    valign: {
+      type: String,
+      default: "auto"
+    },
+    align: {
+      type: String,
+      default: "auto"
+    },
+    notHideOnClick: {
+      type: Boolean,
+      default: !1
+    },
+    inheritWidth: {
+      type: Boolean,
+      default: !1
+    },
+    closable: {
+      type: Boolean,
+      default: !1
+    },
+    animationDuration: {
+      type: Number,
+      default: 200
+    }
+  },
+  emits: ["close", "update:visible", "click-outside"],
+  setup(t, { emit: r }) {
+    const {
+      visible: l,
+      showPointer: u,
+      offset: c,
+      target: h,
+      inheritWidth: d,
+      notHideOnClick: o,
+      position: f,
+      align: A,
+      valign: $,
+      animationDuration: g
+    } = Ze(t), L = H(!!l.value), D = t.name ?? Ye("ga_popup"), { modalWrapperId: B } = da({
+      id: D,
+      visible: L,
+      type: Er.popup
+    }), X = `#${B}`, I = H(null), U = H(l.value ? "block" : "none"), M = H(l.value ? 1 : 0), S = H({
+      top: null,
+      left: null,
+      width: null,
+      height: null
+    }), V = H(), P = H({
+      top: null,
+      left: null,
+      width: null,
+      height: null
+    });
+    Et(() => {
+      L.value && fe();
+    }), wr(() => {
+      ie();
+    });
+    const v = G(() => {
+      const _ = {
+        display: U.value,
+        opacity: M.value,
+        transitionDuration: `${g.value}ms`
+      };
+      return Object.keys(S.value).forEach((y) => {
+        he(S.value[y]) && (_[y] = `${S.value[y]}px`);
+      }), _;
+    }), k = G(() => {
+      const _ = {};
+      return _n(V.value) && (_[V.value] = !0), _;
+    }), q = G(() => {
+      const _ = {};
+      return Object.keys(P.value).forEach((y) => {
+        he(P.value[y]) && (_[y] = `${P.value[y]}px`);
+      }), _;
+    }), ee = G(() => _n(h.value) ? document.querySelector(h.value) : h.value instanceof HTMLElement ? h.value : null);
+    de(l, (_) => {
+      L.value = !!_, _ ? fe() : pe();
+    }), de(h, () => {
+      se();
+    });
+    function oe() {
+      window.addEventListener("scroll", () => se(), !0), window.addEventListener("resize", () => se(), !0), o.value || window.addEventListener("click", re);
+    }
+    function ie() {
+      window.removeEventListener("scroll", () => se(), !0), window.removeEventListener("resize", () => se(), !0), o.value || window.removeEventListener("click", re);
+    }
+    function fe() {
+      I.value !== null && (U.value = "block", setTimeout(() => {
+        se(), M.value = 1;
+      }, 0), setTimeout(() => oe(), g.value ?? 0));
+    }
+    function pe() {
+      M.value = 0, ie(), setTimeout(() => {
+        U.value = "none", r("update:visible", !1), r("close");
+      }, g.value ?? 0);
+    }
+    function re(_) {
+      var m, E;
+      if (!I.value || !ee.value)
+        return;
+      const y = _.target;
+      L.value && !((m = I.value) != null && m.contains(y)) && !((E = ee.value) != null && E.contains(y)) && (r("click-outside", _), pe());
+    }
+    function Y() {
+      return {
+        width: document.documentElement.clientWidth,
+        height: document.documentElement.clientHeight
+      };
+    }
+    function ye(_, y) {
+      let m = _ == null ? void 0 : _.children.namedItem(`${y}_svg`);
+      if (!m) {
+        const E = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        m = document.createElementNS("http://www.w3.org/2000/svg", "svg"), m.setAttribute("id", `${y}_svg`), m.setAttribute("class", "popup-svg-filler"), m.appendChild(E), _ == null || _.appendChild(m);
+      }
+      return m;
+    }
+    function se() {
+      const _ = ee.value;
+      if (!_ || !L.value)
+        return;
+      const y = {
+        top: _.getBoundingClientRect().top,
+        left: _.getBoundingClientRect().left
+      }, m = {
+        width: _.offsetWidth,
+        height: _.offsetHeight
+      }, E = I.value, b = {
+        width: E.offsetWidth,
+        height: E.offsetHeight
+      }, i = {
+        top: 0,
+        left: 0
+      }, w = Y();
+      d.value && (b.width = m.width, S.value.width = b.width);
+      let T = "";
+      const O = {
+        top: y.top - b.height - c.value >= 0,
+        right: y.left + m.width + c.value + b.width <= w.width,
+        bottom: y.top + m.height + c.value + b.height < w.height,
+        left: y.left - b.width - c.value > 0,
+        verticalCenter: y.left + m.width / 2 - b.width / 2 >= 0 && y.left + m.width / 2 + b.width / 2 <= w.width,
+        horizontalCenter: y.top + m.height / 2 - b.height / 2 >= 0 && y.top + m.height / 2 + b.height / 2 <= w.height
+      };
+      switch (f.value) {
+        case "top":
+          T = O.top ? "top" : "bottom";
+          break;
+        case "bottom":
+          T = O.bottom || !O.top ? "bottom" : "top";
+          break;
+        case "right":
+          T = O.right || !O.left ? "right" : "left";
+          break;
+        case "left":
+          T = O.left ? "left" : "right";
+          break;
+      }
+      switch (f.value) {
+        case "top":
+        case "bottom":
+          A.value === "auto" ? O.verticalCenter ? T += "-middle" : O.right && !O.left ? T += "-left" : !O.right && O.left && (T += "-right") : T += `-${A.value}`;
+          break;
+        case "right":
+        case "left":
+          $.value === "auto" ? O.horizontalCenter ? T += "-middle" : O.top && !O.bottom ? T += "-bottom" : !O.top && O.bottom && (T += "-top") : T += `-${$.value}`;
+          break;
+      }
+      switch (T) {
+        case "top-middle":
+          i.top = y.top - b.height - c.value, i.left = y.left + m.width / 2 - b.width / 2;
+          break;
+        case "top-left":
+          i.top = y.top - b.height - c.value, i.left = y.left;
+          break;
+        case "top-right":
+          i.top = y.top - b.height - c.value, i.left = y.left + m.width - b.width;
+          break;
+        case "right-middle":
+          i.top = y.top + m.height / 2 - b.height / 2, i.left = y.left + m.width + c.value;
+          break;
+        case "right-top":
+          i.top = y.top, i.left = y.left + m.width + c.value;
+          break;
+        case "right-bottom":
+          i.top = y.top + m.height - b.height, i.left = y.left + m.width + c.value;
+          break;
+        case "bottom-middle":
+          i.top = y.top + m.height + c.value, i.left = y.left + m.width / 2 - b.width / 2;
+          break;
+        case "bottom-left":
+          i.top = y.top + m.height + c.value, i.left = y.left;
+          break;
+        case "bottom-right":
+          i.top = y.top + m.height + c.value, i.left = y.left + m.width - b.width;
+          break;
+        case "left-middle":
+          i.top = y.top + m.height / 2 - b.height / 2, i.left = y.left - b.width - c.value;
+          break;
+        case "left-top":
+          i.top = y.top, i.left = y.left - b.width - c.value;
+          break;
+        case "left-bottom":
+          i.top = y.top + m.height - b.height, i.left = y.left - b.width - c.value;
+          break;
+      }
+      S.value = {
+        top: i.top,
+        left: i.left,
+        width: S.value.width,
+        height: S.value.height
+      }, Te(T, b, i, y, m), u.value && c.value > 9 && Z(T, b);
+    }
+    function Te(_, y, m, E, b) {
+      if (I.value !== null) {
+        let i = "";
+        const w = ye(I.value, D), T = {
+          top: 0,
+          left: 0,
+          width: 0,
+          height: 0
+        }, O = {
+          left: 0,
+          top: 0
+        };
+        switch (_) {
+          case "top-middle":
+          case "top-left":
+          case "top-right":
+            T.top = y.height, T.left = m.left <= E.left ? 0 : E.left - m.left, T.width = y.width >= b.width ? y.width : b.width, T.height = b.height + c.value, O.top = E.top - (m.top + T.top), O.left = m.left >= E.left ? 0 : E.left - m.left, i += `M ${O.left} ${O.top}`, i += ` v ${b.height}`, i += ` Q ${O.left} 0 0 0`, i += ` h ${T.width}`, i += ` Q ${O.left + b.width} 0 ${O.left - 1 + b.width} ${T.height}`, i += ` v -${b.height - 1}`, i += " z";
+            break;
+          case "right-middle":
+          case "right-top":
+          case "right-bottom":
+            T.top = m.top <= E.top ? 0 : E.top - m.top, T.left = -1 * (b.width + c.value), T.width = b.width + c.value, T.height = y.height >= b.height ? y.height : b.height, O.top = m.top >= E.top ? 0 : E.top - m.top, O.left = 0, i += `M ${O.left} ${O.top}`, i += ` Q ${T.width} ${O.top} ${T.width} 0`, i += ` v ${T.height}`, i += ` Q ${T.width} ${O.top + b.height} ${O.left} ${O.top - 1 + b.height}`, i += ` h ${b.width - 1}`, i += ` v -${b.height}`, i += " z";
+            break;
+          case "bottom-middle":
+          case "bottom-left":
+          case "bottom-right":
+            T.top = -1 * (b.height + c.value), T.left = m.left <= E.left ? 0 : E.left - m.left, T.width = y.width >= b.width ? y.width : b.width, T.height = b.height + c.value, O.top = 0, O.left = m.left >= E.left ? 0 : E.left - m.left, i += `M ${O.left} ${O.top}`, i += ` Q ${O.left} ${T.height} 0 ${T.height}`, i += ` h ${T.width}`, i += ` Q ${O.left + b.width} ${T.height} ${O.left - 1 + b.width} 0`, i += ` v ${b.height - 1}`, i += ` h -${b.width}`, i += " z";
+            break;
+          case "left-middle":
+          case "left-top":
+          case "left-bottom":
+            T.top = m.top <= E.top ? 0 : E.top - m.top, T.left = y.width, T.width = b.width + c.value, T.height = y.height >= b.height ? y.height : b.height, O.top = m.top >= E.top ? 0 : E.top - m.top, O.left = E.left - (m.left + y.width), i += `M ${O.left} ${O.top}`, i += ` h ${b.width}`, i += ` Q 0 ${O.top} 0 0`, i += ` v ${T.height}`, i += ` Q 0 ${O.top + b.height} ${T.width - 1} ${O.top + b.height - 1}`, i += ` h -${b.width - 1}`, i += " z";
+            break;
+        }
+        w.setAttribute("width", String(T.width)), w.setAttribute("height", String(T.height)), w.setAttributeNS(`${D}_namespace`, "viewBox", `0 0 ${T.width} ${T.height}`), Object.keys(T).map((Ee) => {
+          var $e;
+          typeof T[Ee] == "number" && typeof (($e = w == null ? void 0 : w.style) == null ? void 0 : $e[Ee]) < "u" && (w.style[Ee] = `${T[Ee]}px`);
+        });
+        const ae = w.querySelector("path");
+        ae == null || ae.setAttributeNS(`${D}_namespace`, "d", i);
+      }
+    }
+    function Z(_, y) {
+      const [m, E] = _.split("-"), b = {
+        width: ["top", "bottom"].includes(m) ? 20 : 10,
+        height: ["top", "bottom"].includes(m) ? 10 : 20
+      }, i = {
+        top: 0,
+        left: 0
+      };
+      switch (V.value = m, m) {
+        case "top":
+          i.top = y.height - 2;
+          break;
+        case "right":
+          i.left = -1 * b.width;
+          break;
+        case "bottom":
+          i.top = -1 * b.height;
+          break;
+        case "left":
+          i.left = y.width - 2;
+          break;
+      }
+      if (["top", "bottom"].includes(m))
+        switch (E) {
+          case "middle":
+            i.left = y.width / 2 - b.width / 2;
+            break;
+          case "left":
+            i.left = 10;
+            break;
+          case "right":
+            i.left = y.width - b.width - 10;
+            break;
+        }
+      else
+        switch (E) {
+          case "middle":
+            i.top = y.height / 2 - b.height / 2;
+            break;
+          case "top":
+            i.top = 10;
+            break;
+          case "bottom":
+            i.top = y.height - b.height - 10;
+            break;
+        }
+      P.value = {
+        top: i.top,
+        left: i.left,
+        width: b.width,
+        height: b.height
+      };
+    }
+    return {
+      componentId: D,
+      popupEl: I,
+      popupPointerClasses: k,
+      visibleLocal: L,
+      popupStyles: v,
+      popupPointerStyles: q,
+      teleportTarget: X,
+      close: pe,
+      calculatePosition: se
+    };
+  }
+}), pa = ["id"], ha = { class: "ga-popup-content" };
+function va(t, r, l, u, c, h) {
+  const d = Ae("GaIcon");
+  return t.teleportTarget ? (C(), x(Ur, {
+    key: 0,
+    to: t.teleportTarget
+  }, [
+    ne("div", {
+      id: t.componentId,
+      ref: "popupEl",
+      class: ve(["ga-popup", { closable: t.closable }, t.$attrs.class]),
+      style: gr(t.popupStyles)
+    }, [
+      ne("div", {
+        class: ve([{ hidden: !t.showPointer }, "ga-popup-pointer"]),
+        style: gr(t.popupPointerStyles)
+      }, [
+        ne("span", {
+          class: ve(["triangle", t.popupPointerClasses])
+        }, null, 2)
+      ], 6),
+      t.closable ? (C(), F("button", {
+        key: 0,
+        class: "close",
+        onClick: r[0] || (r[0] = (...o) => t.close && t.close(...o))
+      }, [
+        Me(d, {
+          icon: "close",
+          size: "10"
+        })
+      ])) : z("", !0),
+      ne("div", ha, [
+        Be(t.$slots, "default")
+      ])
+    ], 14, pa)
+  ], 8, ["to"])) : z("", !0);
+}
+const Sr = /* @__PURE__ */ Ne(fa, [["render", va]]), ga = Le({
+  name: "GaTooltip",
+  components: { GaIcon: Fe, GaPopup: Sr },
+  props: {
+    text: {
+      type: String,
+      default: ""
+    },
+    position: {
+      type: String,
+      default: "top"
+    },
+    valign: {
+      type: String,
+      default: "auto"
+    },
+    align: {
+      type: String,
+      default: "left"
+    }
+  },
+  setup() {
+    const t = H(), r = Ye("ga-tooltip"), l = H(!1);
+    function u() {
+      l.value = !0;
+    }
+    function c() {
+      l.value = !1;
+    }
+    return {
+      tooltipIconRef: t,
+      componentId: r,
+      popupVisible: l,
+      showPopup: u,
+      hidePopup: c
+    };
+  }
+});
+const ma = ["id"];
+function ya(t, r, l, u, c, h) {
+  const d = Ae("GaIcon"), o = Ae("GaPopup");
+  return C(), F("div", {
+    id: t.componentId,
+    ref: "tooltipIconRef",
+    class: ve(["ga-tooltip", t.$attrs.class]),
+    onMouseenter: r[1] || (r[1] = (...f) => t.showPopup && t.showPopup(...f)),
+    onMouseleave: r[2] || (r[2] = (...f) => t.hidePopup && t.hidePopup(...f))
+  }, [
+    Me(d, {
+      icon: "help",
+      size: "14"
+    }),
+    Me(o, {
+      visible: t.popupVisible,
+      "onUpdate:visible": r[0] || (r[0] = (f) => t.popupVisible = f),
+      class: ve(["ga-tooltip-popup", t.$attrs.class]),
+      target: "#" + t.componentId,
+      "show-pointer": "",
+      position: t.position,
+      valign: t.valign,
+      align: t.align
+    }, {
+      default: _r(() => [
+        Be(t.$slots, "default", { text: t.text }, () => [
+          kt(Ce(t.text), 1)
+        ])
+      ]),
+      _: 3
+    }, 8, ["visible", "class", "target", "position", "valign", "align"])
+  ], 42, ma);
+}
+const Gr = /* @__PURE__ */ Ne(ga, [["render", ya]]);
+function Cr(t) {
+  return { hasIcon: G(() => te(t.value)) };
+}
+function Tn(t, r, l) {
+  return { showClearIcon: G(() => !t.value || l.value ? !1 : Array.isArray(r.value) ? r.value.length > 0 : r.value !== null && r.value !== void 0) };
+}
+function On(t, r, l, u, c) {
+  const h = G(() => r.label || te(l.value)), d = G(() => {
+    const o = [], f = [];
+    return o.push(
+      at(Gr, {
+        class: { hidden: !(u != null && u.value), "ga-control-tooltip": !0 },
+        text: u.value
+      })
+    ), r.label ? f.push(...r.label()) : te(l.value) && f.push(l.value), f.length > 0 && (c != null && c.value) && (f == null || f.push(at("span", { class: "required-sign" }, ["*"]))), f.length > 0 && o.push(at("div", { key: "label-text", class: "ga-control-label-text" }, f)), at("label", { class: "ga-control-label", for: t }, o);
+  });
+  return { labelVisible: h, labelVNode: d };
+}
+function xt(t) {
+  return { errorsVNode: G(() => te(t.value) ? at("div", { class: "errors" }, [t.value]) : null) };
+}
+const Br = Symbol("GaFormValidationContext");
+function en(t, r, l, u) {
+  const c = H(!1), h = H(!1), d = H(!1), o = H(!1), f = H(null), A = G(() => ({
+    touched: c.value,
+    dirty: h.value,
+    validated: d.value,
+    loading: o.value,
+    error: f.value,
+    valid: f.value === null
+  })), $ = Hr(Br, null);
+  Et(() => {
+    $ && $.registerChild(l, A, D, g);
+  }), Wr(() => {
+    $ && $.unregisterChild(l);
+  });
+  async function g() {
+    if (d.value || (d.value = !0), r.value.length !== 0) {
+      for (const I of r.value)
+        if (ke(I)) {
+          const U = I(t.value, l);
+          if (ia(U) ? (o.value = !0, L(await U)) : L(U), !A.value.valid)
+            break;
+        }
+      o.value = !1, u("validate", {
+        componentId: l,
+        value: t.value,
+        valid: A.value.valid
+      });
+    }
+  }
+  function L(I) {
+    I === null ? f.value = null : f.value = I;
+  }
+  function D() {
+    c.value = !1, h.value = !1, d.value = !1, o.value = !1, f.value = null;
+  }
+  function B(I) {
+    c.value = I ?? !0;
+  }
+  function X(I) {
+    h.value = I ?? !0;
+  }
+  return {
+    state: A,
+    errorMessage: G(() => f.value),
+    validate: g,
+    resetState: D,
+    setTouched: B,
+    setDirty: X
+  };
+}
+function oo() {
+  const t = H([]), r = {}, l = G(() => t.value.map((g) => r[g])), u = G(() => !t.value.some((g) => !r[g].state.value.valid)), c = G(() => t.value.some((g) => r[g].state.value.touched)), h = G(() => t.value.some((g) => r[g].state.value.dirty)), d = G(
+    () => t.value.map((g) => ({
+      componentId: r[g].componentId,
+      errorMessage: r[g].state.value.error
+    }))
+  );
+  Qr(Br, { registerChild: o, unregisterChild: f });
+  function o(g, L, D, B) {
+    if (r != null && r[g])
+      throw new Error(`Компонент с id ${g} уже зарегистрирован. Нужен уникальный id`);
+    t.value = [...t.value, g], r[g] = {
+      componentId: g,
+      state: L,
+      resetState: D,
+      validate: B
+    };
+  }
+  function f(g) {
+    const L = [...t.value], D = L.findIndex((B) => B === g);
+    D > -1 && (L.splice(D, 1), t.value = L), r != null && r[g] && delete r[g];
+  }
+  async function A() {
+    if (l.value.length > 0)
+      for (const g of l.value)
+        await g.validate();
+  }
+  async function $() {
+    l.value.length > 0 && l.value.forEach((g) => g.resetState());
+  }
+  return {
+    childrenList: l,
+    errors: d,
+    isValid: u,
+    isTouched: c,
+    isDirty: h,
+    validate: A,
+    resetState: $
+  };
+}
+const ba = Le({
+  name: "GaCheckbox",
+  components: { GaIcon: Fe },
+  props: {
+    modelValue: {
+      type: Boolean,
+      default: !1
+    },
+    name: {
+      type: String,
+      default: null
+    },
+    checkedLabel: {
+      type: String,
+      default: null
+    },
+    uncheckedLabel: {
+      type: String,
+      default: null
+    },
+    mode: {
+      type: String,
+      default: "checkbox"
+    },
+    label: {
+      type: String,
+      default: null
+    },
+    disabled: {
+      type: Boolean,
+      default: !1
+    },
+    required: {
+      type: Boolean,
+      default: !1
+    },
+    validationRules: {
+      type: Array,
+      default: null
+    }
+  },
+  emits: ["update:modelValue", "validate"],
+  setup(t, { emit: r, slots: l }) {
+    const { modelValue: u, name: c, mode: h, checkedLabel: d, uncheckedLabel: o, label: f, disabled: A, required: $, validationRules: g } = Ze(t), L = H(!!t.modelValue), D = G(() => L.value), B = te(c.value) ? c.value : Ye("ga-checkbox"), X = G(() => {
+      const v = [];
+      return $.value && v.push(V), ke(g.value) && v.push(g.value), Array.isArray(g.value) && v.push(...g.value), v;
+    }), I = en(L, X, B, r), U = G(() => {
+      const v = {
+        disabled: A.value,
+        checked: D.value,
+        "have-error": te(I.errorMessage.value)
+      };
+      return v[`mode-${h.value}`] = !0, v;
+    }), { errorsVNode: M } = xt(I.errorMessage), S = G(() => {
+      const v = [];
+      return te(d.value) && L.value ? v.push(d.value) : te(o.value) && !L.value ? v.push(o.value) : l.label ? v.push(...l.label()) : te(f.value) && v.push(f.value), v.length === 0 && v.push(Xe.emptyValuePlaceholder), at("label", { class: "ga-control-label", for: B }, [at("div", { key: "label-text" }, v)]);
+    });
+    de(u, (v) => {
+      v !== L.value && (L.value = !!v);
+    }), de(L, () => {
+      r("update:modelValue", L.value);
+    });
+    async function V(v) {
+      return v ? null : dt.requiredCheckbox;
+    }
+    async function P(v) {
+      I.state.value.dirty || I.setDirty(!0), I.state.value.touched || I.setTouched(!0), L.value = v.target.value !== "true", await I.validate();
+    }
+    return {
+      isChecked: D,
+      componentId: B,
+      modelValueLocal: L,
+      controlClasses: U,
+      errorsVNode: M,
+      labelVNode: S,
+      onInput: P
+    };
+  }
+}), wa = { class: "ga-control-checkbox-content" }, _a = ["id", "value", "disabled", "type"], $a = ["for"], Sa = {
+  key: "error-bag",
+  class: "error-bag"
+};
+function Ca(t, r, l, u, c, h) {
+  const d = Ae("GaIcon");
+  return C(), F("div", {
+    class: ve(["ga-control ga-control-checkbox", t.controlClasses])
+  }, [
+    ne("div", wa, [
+      ne("input", {
+        id: t.componentId,
+        value: t.modelValueLocal,
+        disabled: t.disabled,
+        type: t.mode,
+        onInput: r[0] || (r[0] = (...o) => t.onInput && t.onInput(...o))
+      }, null, 40, _a),
+      ne("label", {
+        class: "ga-control-checkbox-marker",
+        for: t.componentId
+      }, [
+        t.isChecked ? (C(), x(d, {
+          key: 0,
+          icon: "check-mark"
+        })) : z("", !0)
+      ], 8, $a),
+      (C(), x(Re(t.labelVNode)))
+    ]),
+    t.errorsVNode && !t.disabled ? (C(), F("div", Sa, [
+      (C(), x(Re(t.errorsVNode)))
+    ])) : z("", !0)
+  ], 2);
+}
+const Aa = /* @__PURE__ */ Ne(ba, [["render", Ca]]);
+var Ge = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
+function Ar(t) {
+  return t && t.__esModule && Object.prototype.hasOwnProperty.call(t, "default") ? t.default : t;
+}
+var Ta = "Expected a function", Ir = 0 / 0, Oa = "[object Symbol]", Ia = /^\s+|\s+$/g, ka = /^[-+]0x[0-9a-f]+$/i, La = /^0b[01]+$/i, Na = /^0o[0-7]+$/i, Ea = parseInt, Va = typeof Ge == "object" && Ge && Ge.Object === Object && Ge, Ga = typeof self == "object" && self && self.Object === Object && self, Ba = Va || Ga || Function("return this")(), Pa = Object.prototype, ja = Pa.toString, Ma = Math.max, Ra = Math.min, hr = function() {
+  return Ba.Date.now();
+};
+function Fa(t, r, l) {
+  var u, c, h, d, o, f, A = 0, $ = !1, g = !1, L = !0;
+  if (typeof t != "function")
+    throw new TypeError(Ta);
+  r = kr(r) || 0, yr(l) && ($ = !!l.leading, g = "maxWait" in l, h = g ? Ma(kr(l.maxWait) || 0, r) : h, L = "trailing" in l ? !!l.trailing : L);
+  function D(v) {
+    var k = u, q = c;
+    return u = c = void 0, A = v, d = t.apply(q, k), d;
+  }
+  function B(v) {
+    return A = v, o = setTimeout(U, r), $ ? D(v) : d;
+  }
+  function X(v) {
+    var k = v - f, q = v - A, ee = r - k;
+    return g ? Ra(ee, h - q) : ee;
+  }
+  function I(v) {
+    var k = v - f, q = v - A;
+    return f === void 0 || k >= r || k < 0 || g && q >= h;
+  }
+  function U() {
+    var v = hr();
+    if (I(v))
+      return M(v);
+    o = setTimeout(U, X(v));
+  }
+  function M(v) {
+    return o = void 0, L && u ? D(v) : (u = c = void 0, d);
+  }
+  function S() {
+    o !== void 0 && clearTimeout(o), A = 0, u = f = c = o = void 0;
+  }
+  function V() {
+    return o === void 0 ? d : M(hr());
+  }
+  function P() {
+    var v = hr(), k = I(v);
+    if (u = arguments, c = this, f = v, k) {
+      if (o === void 0)
+        return B(f);
+      if (g)
+        return o = setTimeout(U, r), D(f);
+    }
+    return o === void 0 && (o = setTimeout(U, r)), d;
+  }
+  return P.cancel = S, P.flush = V, P;
+}
+function yr(t) {
+  var r = typeof t;
+  return !!t && (r == "object" || r == "function");
+}
+function Da(t) {
+  return !!t && typeof t == "object";
+}
+function qa(t) {
+  return typeof t == "symbol" || Da(t) && ja.call(t) == Oa;
+}
+function kr(t) {
+  if (typeof t == "number")
+    return t;
+  if (qa(t))
+    return Ir;
+  if (yr(t)) {
+    var r = typeof t.valueOf == "function" ? t.valueOf() : t;
+    t = yr(r) ? r + "" : r;
+  }
+  if (typeof t != "string")
+    return t === 0 ? t : +t;
+  t = t.replace(Ia, "");
+  var l = La.test(t);
+  return l || Na.test(t) ? Ea(t.slice(2), l ? 2 : 8) : ka.test(t) ? Ir : +t;
+}
+var Ua = Fa;
+const In = /* @__PURE__ */ Ar(Ua), Ha = Le({
+  name: "GaInput",
+  components: { GaIcon: Fe },
+  props: {
+    /**
+     * Редактируемое значение, может быть строкой или null
+     * Пустая строка ('') автоматически приводится к null
+     */
+    modelValue: {
+      type: String,
+      default: null
+    },
+    /**
+     * Уникальное имя контрола, будет в атрибуте attr-autotest и в качестве id для input
+     */
+    name: {
+      type: String,
+      default: null
+    },
+    /**
+     * Название контрола. Если передан слот label, то этот пропс игнорируется
+     */
+    label: {
+      type: String,
+      default: null
+    },
+    /**
+     * Подсказка контрола, отрисовывается сразу после названия в виде кружка с вопросом
+     */
+    tooltip: {
+      type: String,
+      default: null
+    },
+    /**
+     * Отключение контрола. Если передан true - ввод данных будет недоступен
+     */
+    disabled: {
+      type: Boolean,
+      default: !1
+    },
+    /**
+     * Режим чтения. Если передан true - будет отображаться только название контрола и его значение в текстовом виде.
+     * Если значение отсутствует - используется переменная GaUiStorage.defaultValuePlaceholder
+     */
+    readonly: {
+      type: Boolean,
+      default: !1
+    },
+    /**
+     * Текст внутри контрола пока не указано значение
+     */
+    placeholder: {
+      type: String,
+      default: null
+    },
+    /**
+     * Иконка контрола, отрисовывается слева от ввода данных
+     */
+    icon: {
+      type: String,
+      default: null
+    },
+    /**
+     * Показывать иконку очистки если есть значение, по умолчанию включено
+     */
+    clearable: {
+      type: Boolean,
+      default: !0
+    },
+    /**
+     * Встроенная валидация значения - обязательное заполнение
+     * Если передан true - рисует красную звёздочку после названия контрола
+     */
+    required: {
+      type: Boolean,
+      default: !1
+    },
+    /**
+     * Встроенная валидация значения - минимальная длина текста, длина текстового значения должна быть длинее или равна указанному
+     */
+    minLength: {
+      type: [Number, String],
+      default: null
+    },
+    /**
+     * Встроенная валидация значения - максимальная длина текста, длина текстового значения должна быть меньше или равна указанному
+     */
+    maxLength: {
+      type: [Number, String],
+      default: null
+    },
+    /**
+     * Функции валидации значения. Можно передать одну функцию, можно передать массив значений.
+     * Функция должна быть ассинхронной (т.е. должна возвращать Promis), принимает в качестве аргумента значние контрола,
+     * должна вернуть текст ошибки в случае ошибки или null
+     */
+    validationRules: {
+      type: Array,
+      default: null
+    },
+    /**
+     * Тип инпута в контролле, передается в атрибут type у input. По умолчанию - text
+     */
+    type: {
+      type: String,
+      default: "text"
+    },
+    /**
+     * Поскольку валидация запускается после ввода данных, сделана небольшая задержка с помощью функции debounce.
+     * По умолчанию в качестве значения используется переменная GaUiStorage.defaultDebounceInput
+     * Значение задержки передается в миллисекундах, т.е. если нужно задержка в 1 секунду - нужно передать 1000
+     */
+    debounceInput: {
+      type: Number,
+      default: 300
+    }
+  },
+  emits: [
+    /**
+     * Изменение значения
+     *
+     * @event update:modelValue
+     * @type {String | null}
+     */
+    "update:modelValue",
+    /**
+     * Установка фокуса на контроле
+     *
+     * @event update:modelValue
+     * @type {Event}
+     */
+    "focus",
+    /**
+     * Потеря фокуса контролом
+     *
+     * @event update:modelValue
+     * @type {Event}
+     */
+    "blur",
+    /**
+     * Результат валидации значения контрола, стреляет после каждой валидации
+     *
+     * @event update:modelValue
+     * @type {{componentId: string, value: string | null, valid: boolean}}
+     * @property {string} componentId
+     */
+    "validate"
+  ],
+  setup(t, { emit: r, slots: l }) {
+    const {
+      modelValue: u,
+      name: c,
+      label: h,
+      tooltip: d,
+      disabled: o,
+      readonly: f,
+      icon: A,
+      clearable: $,
+      required: g,
+      minLength: L,
+      maxLength: D,
+      validationRules: B,
+      debounceInput: X
+    } = Ze(t), I = H(t.modelValue), U = H(!1), M = H(), S = te(c.value) ? c.value : Ye("ga-input"), V = Lt(L), P = Lt(D), v = G(() => {
+      const m = An({
+        minLength: V.value,
+        maxLength: P.value
+      }), E = [];
+      return g.value && E.push(m.required), he(V.value) && E.push(m.minLength), he(P.value) && E.push(m.maxLength), ke(B.value) && E.push(B.value), Array.isArray(B.value) && E.push(...B.value), E;
+    }), k = en(I, v, S, r), q = G(() => ({
+      clearable: $.value,
+      focused: U.value,
+      disabled: o.value,
+      readonly: f.value,
+      "with-icon": pe.value,
+      "have-error": !f.value && te(k.errorMessage.value)
+    })), ee = G(() => I.value ?? Xe.emptyValuePlaceholder), { labelVisible: oe, labelVNode: ie } = On(S, l, h, d, g), { errorsVNode: fe } = xt(k.errorMessage), { hasIcon: pe } = Cr(A), { showClearIcon: re } = Tn($, I, o);
+    de(u, (m) => {
+      m !== I.value && (I.value = m ?? null);
+    }), de(I, () => {
+      r("update:modelValue", I.value);
+    });
+    const Y = G(() => In(async (m) => {
+      I.value = m, await k.validate();
+    }, X.value));
+    function ye(m) {
+      var b;
+      k.state.value.dirty || k.setDirty(!0);
+      const E = te((b = m == null ? void 0 : m.target) == null ? void 0 : b.value) ? m.target.value : null;
+      Y.value(E);
+    }
+    function se() {
+      if (!o.value)
+        Y.value(null);
+      else
+        return;
+    }
+    function Te(m) {
+      k.state.value.touched || k.setTouched(!0), U.value = !0, r("focus", m);
+    }
+    function Z(m) {
+      U.value = !1, r("blur", m);
+    }
+    function _() {
+      var m;
+      (m = M.value) == null || m.focus();
+    }
+    function y() {
+      var m;
+      (m = M.value) == null || m.blur();
+    }
+    return {
+      componentId: S,
+      controlClasses: q,
+      readonlyValue: ee,
+      labelVisible: oe,
+      labelVNode: ie,
+      errorsVNode: fe,
+      hasIcon: pe,
+      showClearIcon: re,
+      modelValueLocal: I,
+      inputRef: M,
+      handleChange: Y,
+      onInput: ye,
+      onBlur: Z,
+      onFocus: Te,
+      onClear: se,
+      focus: _,
+      blur: y
+    };
+  }
+}), Wa = ["attr-autotest"], Qa = {
+  key: 1,
+  class: "ga-control-readonly-content"
+}, Ka = {
+  key: 2,
+  class: "ga-control-input-content"
+}, za = ["id", "value", "type", "placeholder", "disabled"], Ja = {
+  key: "error-bag",
+  class: "error-bag"
+};
+function Xa(t, r, l, u, c, h) {
+  const d = Ae("GaIcon");
+  return C(), F("div", {
+    class: ve(["ga-control ga-control-input", t.controlClasses]),
+    "attr-autotest": t.componentId
+  }, [
+    t.labelVisible ? (C(), x(Re(t.labelVNode), { key: 0 })) : z("", !0),
+    t.readonly ? (C(), F("div", Qa, Ce(t.readonlyValue), 1)) : (C(), F("div", Ka, [
+      t.hasIcon ? (C(), x(d, {
+        key: 0,
+        icon: t.icon,
+        class: "ga-control-icon"
+      }, null, 8, ["icon"])) : z("", !0),
+      ne("input", {
+        id: t.componentId,
+        ref: "inputRef",
+        value: t.modelValueLocal,
+        type: t.type,
+        placeholder: t.placeholder,
+        disabled: t.disabled,
+        autocomplete: "off",
+        onInput: r[0] || (r[0] = (...o) => t.onInput && t.onInput(...o)),
+        onBlur: r[1] || (r[1] = ft((...o) => t.onBlur && t.onBlur(...o), ["stop"])),
+        onFocus: r[2] || (r[2] = ft((...o) => t.onFocus && t.onFocus(...o), ["stop"]))
+      }, null, 40, za),
+      t.showClearIcon ? (C(), x(d, {
+        key: 1,
+        icon: "close",
+        class: "ga-control-clear-icon",
+        onClick: t.onClear
+      }, null, 8, ["onClick"])) : z("", !0)
+    ])),
+    t.errorsVNode && !t.readonly && !t.disabled ? (C(), F("div", Ja, [
+      (C(), x(Re(t.errorsVNode)))
+    ])) : z("", !0)
+  ], 10, Wa);
+}
+const Pr = /* @__PURE__ */ Ne(Ha, [["render", Xa]]), Za = Le({
+  name: "GaInputNumber",
+  components: { GaIcon: Fe },
+  props: {
+    /**
+     * Редактируемое значение, может быть числом или null
+     * При инциализации если в значении строка - пытается привести её к числу, если не получается - переводит в null
+     */
+    modelValue: {
+      type: Number,
+      default: null
+    },
+    /**
+     * Уникальное имя контрола, будет в атрибуте attr-autotest и в качестве id для input
+     */
+    name: {
+      type: String,
+      default: null
+    },
+    /**
+     * Название контрола. Если передан слот label, то этот пропс игнорируется
+     */
+    label: {
+      type: String,
+      default: null
+    },
+    /**
+     * Подсказка контрола, отрисовывается сразу после названия в виде кружка с вопросом
+     */
+    tooltip: {
+      type: String,
+      default: null
+    },
+    /**
+     * Отключение контрола. Если передан true - ввод данных будет недоступен
+     */
+    disabled: {
+      type: Boolean,
+      default: !1
+    },
+    /**
+     * Режим чтения. Если передан true - будет отображаться только название контрола и его значение в текстовом виде.
+     * Если значение отсутствует - используется переменная GaUiStorage.defaultValuePlaceholder
+     */
+    readonly: {
+      type: Boolean,
+      default: !1
+    },
+    /**
+     * Текст внутри контрола пока не указано значение
+     */
+    placeholder: {
+      type: String,
+      default: null
+    },
+    /**
+     * Иконка контрола, отрисовывается слева от ввода данных
+     */
+    icon: {
+      type: String,
+      default: null
+    },
+    /**
+     * Показывать иконку очистки если есть значение, по умолчанию включено
+     */
+    clearable: {
+      type: Boolean,
+      default: !0
+    },
+    /**
+     * Встроенная валидация значения - обязательное заполнение
+     * Если передан true - рисует красную звёздочку после названия контрола
+     */
+    required: {
+      type: Boolean,
+      default: !1
+    },
+    /**
+     * Встроенная валидация значения - минимальное значение, значение контрола должно быть больше или равно указанному
+     */
+    min: {
+      type: [Number, String],
+      default: null
+    },
+    /**
+     * Встроенная валидация значения - максимальное значение, значение контрола должно быть меньше или равно указанному
+     */
+    max: {
+      type: [Number, String],
+      default: null
+    },
+    /**
+     * Функции валидации значения. Можно передать одну функцию, можно передать массив значений.
+     * Функция должна быть ассинхронной (т.е. должна возвращать Promis), принимает в качестве аргумента значние контрола,
+     * должна вернуть текст ошибки в случае ошибки или null
+     */
+    validationRules: {
+      type: Array,
+      default: null
+    },
+    /**
+     * Точность числа, больше которой указать нельзя будет, указывается разрешенное количество знаков после запятой
+     * по умолчанию 2 значка после запятой - 0.01
+     */
+    precision: {
+      type: Number,
+      default: 2
+    },
+    /**
+     * Поскольку валидация запускается после ввода данных, сделана небольшая задержка с помощью функции debounce.
+     * По умолчанию в качестве значения используется переменная GaUiStorage.defaultDebounceInput
+     * Значение задержки передается в миллисекундах, т.е. если нужно задержка в 1 секунду - нужно передать 1000
+     */
+    debounceInput: {
+      type: Number,
+      default: 300
+    }
+  },
+  emits: [
+    /**
+     * Изменение значения
+     *
+     * @event update:modelValue
+     * @type {String | null}
+     */
+    "update:modelValue",
+    /**
+     * Установка фокуса на контроле
+     *
+     * @event update:modelValue
+     * @type {Event}
+     */
+    "focus",
+    /**
+     * Потеря фокуса контролом
+     *
+     * @event update:modelValue
+     * @type {Event}
+     */
+    "blur",
+    /**
+     * Результат валидации значения контрола, стреляет после каждой валидации
+     *
+     * @event update:modelValue
+     * @type {{componentId: string, value: number | null, valid: boolean}}
+     * @property {string} componentId
+     */
+    "validate"
+  ],
+  setup(t, { emit: r, slots: l }) {
+    const {
+      modelValue: u,
+      name: c,
+      label: h,
+      tooltip: d,
+      disabled: o,
+      readonly: f,
+      icon: A,
+      clearable: $,
+      required: g,
+      min: L,
+      max: D,
+      validationRules: B,
+      debounceInput: X
+    } = Ze(t), I = wn(t, "precision", 2), U = H(!1), M = H(), S = H(null);
+    switch (typeof u.value) {
+      case "number":
+        S.value = u.value;
+        break;
+      case "string": {
+        S.value = b(E(u.value));
+        break;
+      }
+    }
+    const V = te(c.value) ? c.value : Ye("ga-input"), P = Lt(L), v = Lt(D), k = G(() => {
+      const i = An({
+        min: P.value,
+        max: v.value
+      }), w = [];
+      return g.value && w.push(i.required), he(P.value) && w.push(i.min), he(v.value) && w.push(i.max), ke(B.value) && w.push(B.value), Array.isArray(B.value) && w.push(...B.value), w;
+    }), q = en(S, k, V, r), ee = G(() => ({
+      clearable: $.value,
+      focused: U.value,
+      disabled: o.value,
+      readonly: f.value,
+      "with-icon": re.value,
+      "have-error": !f.value && te(q.errorMessage.value)
+    })), oe = G(() => S.value ?? Xe.emptyValuePlaceholder), { labelVisible: ie, labelVNode: fe } = On(V, l, h, d, g), { errorsVNode: pe } = xt(q.errorMessage), { hasIcon: re } = Cr(A), { showClearIcon: Y } = Tn($, S, o);
+    de(u, (i) => {
+      let w = null;
+      switch (typeof i) {
+        case "number":
+          w = i;
+          break;
+        case "string":
+          w = b(E(i));
+      }
+      w !== S.value && (S.value = w);
+    }), de(S, () => {
+      r("update:modelValue", S.value);
+    });
+    const ye = G(() => In(async (i) => {
+      S.value = i, await q.validate();
+    }, X.value));
+    function se(i) {
+      q.state.value.dirty || q.setDirty(!0);
+      const w = E(i.target.value);
+      i.target.value = w;
+      const T = b(w);
+      ye.value(T);
+    }
+    function Te() {
+      if (!o.value)
+        ye.value(null);
+      else
+        return;
+    }
+    function Z(i) {
+      q.state.value.touched || q.setTouched(!0), U.value = !0, r("focus", i);
+    }
+    function _(i) {
+      U.value = !1, r("blur", i);
+    }
+    function y() {
+      var i;
+      (i = M.value) == null || i.focus();
+    }
+    function m() {
+      var i;
+      (i = M.value) == null || i.blur();
+    }
+    function E(i) {
+      if (he(i) || i === null || typeof i == "string" && i.length === 0)
+        return null;
+      let w = "", T = "";
+      if (i[0] === "-" ? (T = "-", w = i.slice(1)) : w = i, w = w.replace(/[^\d,.]+/, ""), /^[\d,.]+$/.test(w)) {
+        w = w.replace(",", ".");
+        const O = [...w.matchAll(/\./g)];
+        if (O.length === 2) {
+          const ae = w.split("");
+          ae.splice(O[1].index, 1), w = ae.join("");
+        }
+        if (w[0] === ".")
+          switch (w.length) {
+            case 1:
+              w = "0.";
+              break;
+            case 2:
+              w[1] === "0" ? w = "0" : w = `0${w}`;
+              break;
+            default:
+              w = `0${w}`;
+              break;
+          }
+        else if (w[0] === "0")
+          switch (w.length) {
+            case 1:
+              break;
+            case 2:
+              w[1] !== "." && (w = w.slice(1));
+              break;
+            default:
+              (w[1] === "0" || w[1] !== ".") && (w = w.slice(1));
+          }
+        if (I.value === 0) {
+          const ae = w.split(".");
+          ae.length > 1 && (w = ae[0]);
+        } else {
+          const ae = w.split(".");
+          ae.length > 1 && (w = `${ae[0]}.`, ae[1].length > I.value ? w += ae[1].slice(0, I.value) : w += ae[1]);
+        }
+      }
+      return w = T + w, w;
+    }
+    function b(i) {
+      let w = null;
+      switch (typeof i) {
+        case "number":
+          w = i;
+          break;
+        case "string": {
+          i.length === 0 && (w = null);
+          const O = parseFloat(i);
+          w = isNaN(O) ? null : O;
+          break;
+        }
+      }
+      if (w === null)
+        return null;
+      if (I.value === 0)
+        return Math.round(w);
+      const T = Math.pow(10, I.value ?? 0);
+      return Math.round(w * T) / T;
+    }
+    return {
+      componentId: V,
+      controlClasses: ee,
+      readonlyValue: oe,
+      labelVisible: ie,
+      labelVNode: fe,
+      errorsVNode: pe,
+      hasIcon: re,
+      showClearIcon: Y,
+      modelValueLocal: S,
+      inputRef: M,
+      handleChange: ye,
+      onInput: se,
+      onBlur: _,
+      onFocus: Z,
+      onClear: Te,
+      focus: y,
+      blur: m
+    };
+  }
+}), Ya = ["attr-autotest"], xa = {
+  key: 1,
+  class: "ga-control-readonly-content"
+}, el = {
+  key: 2,
+  class: "ga-control-input-number-content"
+}, tl = ["id", "value", "placeholder", "disabled", "name"], nl = {
+  key: "error-bag",
+  class: "error-bag"
+};
+function rl(t, r, l, u, c, h) {
+  const d = Ae("GaIcon");
+  return C(), F("div", {
+    class: ve(["ga-control ga-control-input-number", t.controlClasses]),
+    "attr-autotest": t.componentId
+  }, [
+    t.labelVisible ? (C(), x(Re(t.labelVNode), { key: 0 })) : z("", !0),
+    t.readonly ? (C(), F("div", xa, Ce(t.readonlyValue), 1)) : (C(), F("div", el, [
+      t.hasIcon ? (C(), x(d, {
+        key: 0,
+        icon: t.icon,
+        class: "ga-control-icon"
+      }, null, 8, ["icon"])) : z("", !0),
+      ne("input", {
+        id: t.componentId,
+        ref: "inputRef",
+        value: t.modelValueLocal,
+        type: "text",
+        placeholder: t.placeholder,
+        disabled: t.disabled,
+        name: t.name,
+        autocomplete: "off",
+        onInput: r[0] || (r[0] = (...o) => t.onInput && t.onInput(...o)),
+        onBlur: r[1] || (r[1] = ft((...o) => t.onBlur && t.onBlur(...o), ["stop"])),
+        onFocus: r[2] || (r[2] = ft((...o) => t.onFocus && t.onFocus(...o), ["stop"]))
+      }, null, 40, tl),
+      t.showClearIcon ? (C(), x(d, {
+        key: 1,
+        icon: "close",
+        class: "ga-control-clear-icon",
+        onClick: t.onClear
+      }, null, 8, ["onClick"])) : z("", !0)
+    ])),
+    t.errorsVNode && !t.readonly && !t.disabled ? (C(), F("div", nl, [
+      (C(), x(Re(t.errorsVNode)))
+    ])) : z("", !0)
+  ], 10, Ya);
+}
+const al = /* @__PURE__ */ Ne(Za, [["render", rl]]), ll = Le({
+  name: "GaLoader",
+  props: {
+    visible: {
+      type: Boolean,
+      default: !1
+    }
+  }
+});
+const ol = {
+  key: 0,
+  class: "ga-loader"
+}, il = { class: "ga-loader-message" };
+function sl(t, r, l, u, c, h) {
+  return t.visible ? (C(), F("div", ol, [
+    r[0] || (r[0] = ne("span", null, null, -1)),
+    ne("div", il, [
+      Be(t.$slots, "default")
+    ])
+  ])) : z("", !0);
+}
+const ul = /* @__PURE__ */ Ne(ll, [["render", sl]]);
+var $n = { exports: {} };
+$n.exports;
+(function(t, r) {
+  var l = 200, u = "__lodash_hash_undefined__", c = 1, h = 2, d = 9007199254740991, o = "[object Arguments]", f = "[object Array]", A = "[object AsyncFunction]", $ = "[object Boolean]", g = "[object Date]", L = "[object Error]", D = "[object Function]", B = "[object GeneratorFunction]", X = "[object Map]", I = "[object Number]", U = "[object Null]", M = "[object Object]", S = "[object Promise]", V = "[object Proxy]", P = "[object RegExp]", v = "[object Set]", k = "[object String]", q = "[object Symbol]", ee = "[object Undefined]", oe = "[object WeakMap]", ie = "[object ArrayBuffer]", fe = "[object DataView]", pe = "[object Float32Array]", re = "[object Float64Array]", Y = "[object Int8Array]", ye = "[object Int16Array]", se = "[object Int32Array]", Te = "[object Uint8Array]", Z = "[object Uint8ClampedArray]", _ = "[object Uint16Array]", y = "[object Uint32Array]", m = /[\\^$.*+?()[\]{}|]/g, E = /^\[object .+?Constructor\]$/, b = /^(?:0|[1-9]\d*)$/, i = {};
+  i[pe] = i[re] = i[Y] = i[ye] = i[se] = i[Te] = i[Z] = i[_] = i[y] = !0, i[o] = i[f] = i[ie] = i[$] = i[fe] = i[g] = i[L] = i[D] = i[X] = i[I] = i[M] = i[P] = i[v] = i[k] = i[oe] = !1;
+  var w = typeof Ge == "object" && Ge && Ge.Object === Object && Ge, T = typeof self == "object" && self && self.Object === Object && self, O = w || T || Function("return this")(), ae = r && !r.nodeType && r, Ee = ae && !0 && t && !t.nodeType && t, $e = Ee && Ee.exports === ae, xe = $e && w.process, pt = function() {
+    try {
+      return xe && xe.binding && xe.binding("util");
+    } catch {
+    }
+  }(), We = pt && pt.isTypedArray;
+  function ht(e, n) {
+    for (var a = -1, s = e == null ? 0 : e.length, R = 0, N = []; ++a < s; ) {
+      var W = e[a];
+      n(W, a, e) && (N[R++] = W);
+    }
+    return N;
+  }
+  function et(e, n) {
+    for (var a = -1, s = n.length, R = e.length; ++a < s; )
+      e[R + a] = n[a];
+    return e;
+  }
+  function vt(e, n) {
+    for (var a = -1, s = e == null ? 0 : e.length; ++a < s; )
+      if (n(e[a], a, e))
+        return !0;
+    return !1;
+  }
+  function Vt(e, n) {
+    for (var a = -1, s = Array(e); ++a < e; )
+      s[a] = n(a);
+    return s;
+  }
+  function Gt(e) {
+    return function(n) {
+      return e(n);
+    };
+  }
+  function De(e, n) {
+    return e.has(n);
+  }
+  function tt(e, n) {
+    return e == null ? void 0 : e[n];
+  }
+  function gt(e) {
+    var n = -1, a = Array(e.size);
+    return e.forEach(function(s, R) {
+      a[++n] = [R, s];
+    }), a;
+  }
+  function mt(e, n) {
+    return function(a) {
+      return e(n(a));
+    };
+  }
+  function p(e) {
+    var n = -1, a = Array(e.size);
+    return e.forEach(function(s) {
+      a[++n] = s;
+    }), a;
+  }
+  var j = Array.prototype, Q = Function.prototype, ue = Object.prototype, yt = O["__core-js_shared__"], Bt = Q.toString, Ve = ue.hasOwnProperty, tn = function() {
+    var e = /[^.]+$/.exec(yt && yt.keys && yt.keys.IE_PROTO || "");
+    return e ? "Symbol(src)_1." + e : "";
+  }(), nn = ue.toString, kn = RegExp(
+    "^" + Bt.call(Ve).replace(m, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
+  ), Pt = $e ? O.Buffer : void 0, bt = O.Symbol, rn = O.Uint8Array, wt = ue.propertyIsEnumerable, lt = j.splice, Pe = bt ? bt.toStringTag : void 0, _t = Object.getOwnPropertySymbols, jt = Pt ? Pt.isBuffer : void 0, ot = mt(Object.keys, Object), Mt = Ke(O, "DataView"), it = Ke(O, "Map"), Rt = Ke(O, "Promise"), Ft = Ke(O, "Set"), Dt = Ke(O, "WeakMap"), nt = Ke(Object, "create"), an = Se(Mt), Qe = Se(it), Ln = Se(Rt), Nn = Se(Ft), En = Se(Dt), ln = bt ? bt.prototype : void 0, qt = ln ? ln.valueOf : void 0;
+  function ge(e) {
+    var n = -1, a = e == null ? 0 : e.length;
+    for (this.clear(); ++n < a; ) {
+      var s = e[n];
+      this.set(s[0], s[1]);
+    }
+  }
+  function Vn() {
+    this.__data__ = nt ? nt(null) : {}, this.size = 0;
+  }
+  function Gn(e) {
+    var n = this.has(e) && delete this.__data__[e];
+    return this.size -= n ? 1 : 0, n;
+  }
+  function Bn(e) {
+    var n = this.__data__;
+    if (nt) {
+      var a = n[e];
+      return a === u ? void 0 : a;
+    }
+    return Ve.call(n, e) ? n[e] : void 0;
+  }
+  function Pn(e) {
+    var n = this.__data__;
+    return nt ? n[e] !== void 0 : Ve.call(n, e);
+  }
+  function jn(e, n) {
+    var a = this.__data__;
+    return this.size += this.has(e) ? 0 : 1, a[e] = nt && n === void 0 ? u : n, this;
+  }
+  ge.prototype.clear = Vn, ge.prototype.delete = Gn, ge.prototype.get = Bn, ge.prototype.has = Pn, ge.prototype.set = jn;
+  function be(e) {
+    var n = -1, a = e == null ? 0 : e.length;
+    for (this.clear(); ++n < a; ) {
+      var s = e[n];
+      this.set(s[0], s[1]);
+    }
+  }
+  function Mn() {
+    this.__data__ = [], this.size = 0;
+  }
+  function Rn(e) {
+    var n = this.__data__, a = Ct(n, e);
+    if (a < 0)
+      return !1;
+    var s = n.length - 1;
+    return a == s ? n.pop() : lt.call(n, a, 1), --this.size, !0;
+  }
+  function Fn(e) {
+    var n = this.__data__, a = Ct(n, e);
+    return a < 0 ? void 0 : n[a][1];
+  }
+  function Dn(e) {
+    return Ct(this.__data__, e) > -1;
+  }
+  function qn(e, n) {
+    var a = this.__data__, s = Ct(a, e);
+    return s < 0 ? (++this.size, a.push([e, n])) : a[s][1] = n, this;
+  }
+  be.prototype.clear = Mn, be.prototype.delete = Rn, be.prototype.get = Fn, be.prototype.has = Dn, be.prototype.set = qn;
+  function Oe(e) {
+    var n = -1, a = e == null ? 0 : e.length;
+    for (this.clear(); ++n < a; ) {
+      var s = e[n];
+      this.set(s[0], s[1]);
+    }
+  }
+  function Un() {
+    this.size = 0, this.__data__ = {
+      hash: new ge(),
+      map: new (it || be)(),
+      string: new ge()
+    };
+  }
+  function Hn(e) {
+    var n = je(this, e).delete(e);
+    return this.size -= n ? 1 : 0, n;
+  }
+  function Wn(e) {
+    return je(this, e).get(e);
+  }
+  function Qn(e) {
+    return je(this, e).has(e);
+  }
+  function Kn(e, n) {
+    var a = je(this, e), s = a.size;
+    return a.set(e, n), this.size += a.size == s ? 0 : 1, this;
+  }
+  Oe.prototype.clear = Un, Oe.prototype.delete = Hn, Oe.prototype.get = Wn, Oe.prototype.has = Qn, Oe.prototype.set = Kn;
+  function $t(e) {
+    var n = -1, a = e == null ? 0 : e.length;
+    for (this.__data__ = new Oe(); ++n < a; )
+      this.add(e[n]);
+  }
+  function on(e) {
+    return this.__data__.set(e, u), this;
+  }
+  function St(e) {
+    return this.__data__.has(e);
+  }
+  $t.prototype.add = $t.prototype.push = on, $t.prototype.has = St;
+  function qe(e) {
+    var n = this.__data__ = new be(e);
+    this.size = n.size;
+  }
+  function Ut() {
+    this.__data__ = new be(), this.size = 0;
+  }
+  function zn(e) {
+    var n = this.__data__, a = n.delete(e);
+    return this.size = n.size, a;
+  }
+  function Jn(e) {
+    return this.__data__.get(e);
+  }
+  function Xn(e) {
+    return this.__data__.has(e);
+  }
+  function Zn(e, n) {
+    var a = this.__data__;
+    if (a instanceof be) {
+      var s = a.__data__;
+      if (!it || s.length < l - 1)
+        return s.push([e, n]), this.size = ++a.size, this;
+      a = this.__data__ = new Oe(s);
+    }
+    return a.set(e, n), this.size = a.size, this;
+  }
+  qe.prototype.clear = Ut, qe.prototype.delete = zn, qe.prototype.get = Jn, qe.prototype.has = Xn, qe.prototype.set = Zn;
+  function Yn(e, n) {
+    var a = At(e), s = !a && fn(e), R = !a && !s && Tt(e), N = !a && !s && !R && vn(e), W = a || s || R || N, K = W ? Vt(e.length, String) : [], le = K.length;
+    for (var J in e)
+      (n || Ve.call(e, J)) && !(W && // Safari 9 has enumerable `arguments.length` in strict mode.
+      (J == "length" || // Node.js 0.10 has enumerable non-index properties on buffers.
+      R && (J == "offset" || J == "parent") || // PhantomJS 2 has enumerable non-index properties on typed arrays.
+      N && (J == "buffer" || J == "byteLength" || J == "byteOffset") || // Skip index properties.
+      or(J, le))) && K.push(J);
+    return K;
+  }
+  function Ct(e, n) {
+    for (var a = e.length; a--; )
+      if (dn(e[a][0], n))
+        return a;
+    return -1;
+  }
+  function Ht(e, n, a) {
+    var s = n(e);
+    return At(e) ? s : et(s, a(e));
+  }
+  function st(e) {
+    return e == null ? e === void 0 ? ee : U : Pe && Pe in Object(e) ? ze(e) : cn(e);
+  }
+  function sn(e) {
+    return He(e) && st(e) == o;
+  }
+  function un(e, n, a, s, R) {
+    return e === n ? !0 : e == null || n == null || !He(e) && !He(n) ? e !== e && n !== n : xn(e, n, a, s, un, R);
+  }
+  function xn(e, n, a, s, R, N) {
+    var W = At(e), K = At(n), le = W ? f : Ue(e), J = K ? f : Ue(n);
+    le = le == o ? M : le, J = J == o ? M : J;
+    var we = le == M, Ie = J == M, ce = le == J;
+    if (ce && Tt(e)) {
+      if (!Tt(n))
+        return !1;
+      W = !0, we = !1;
+    }
+    if (ce && !we)
+      return N || (N = new qe()), W || vn(e) ? Wt(e, n, a, s, R, N) : rr(e, n, le, a, s, R, N);
+    if (!(a & c)) {
+      var _e = we && Ve.call(e, "__wrapped__"), me = Ie && Ve.call(n, "__wrapped__");
+      if (_e || me) {
+        var rt = _e ? e.value() : e, Je = me ? n.value() : n;
+        return N || (N = new qe()), R(rt, Je, a, s, N);
+      }
+    }
+    return ce ? (N || (N = new qe()), ar(e, n, a, s, R, N)) : !1;
+  }
+  function er(e) {
+    if (!hn(e) || sr(e))
+      return !1;
+    var n = pn(e) ? kn : E;
+    return n.test(Se(e));
+  }
+  function tr(e) {
+    return He(e) && Kt(e.length) && !!i[st(e)];
+  }
+  function nr(e) {
+    if (!ur(e))
+      return ot(e);
+    var n = [];
+    for (var a in Object(e))
+      Ve.call(e, a) && a != "constructor" && n.push(a);
+    return n;
+  }
+  function Wt(e, n, a, s, R, N) {
+    var W = a & c, K = e.length, le = n.length;
+    if (K != le && !(W && le > K))
+      return !1;
+    var J = N.get(e);
+    if (J && N.get(n))
+      return J == n;
+    var we = -1, Ie = !0, ce = a & h ? new $t() : void 0;
+    for (N.set(e, n), N.set(n, e); ++we < K; ) {
+      var _e = e[we], me = n[we];
+      if (s)
+        var rt = W ? s(me, _e, we, n, e, N) : s(_e, me, we, e, n, N);
+      if (rt !== void 0) {
+        if (rt)
+          continue;
+        Ie = !1;
+        break;
+      }
+      if (ce) {
+        if (!vt(n, function(Je, ct) {
+          if (!De(ce, ct) && (_e === Je || R(_e, Je, a, s, N)))
+            return ce.push(ct);
+        })) {
+          Ie = !1;
+          break;
+        }
+      } else if (!(_e === me || R(_e, me, a, s, N))) {
+        Ie = !1;
+        break;
+      }
+    }
+    return N.delete(e), N.delete(n), Ie;
+  }
+  function rr(e, n, a, s, R, N, W) {
+    switch (a) {
+      case fe:
+        if (e.byteLength != n.byteLength || e.byteOffset != n.byteOffset)
+          return !1;
+        e = e.buffer, n = n.buffer;
+      case ie:
+        return !(e.byteLength != n.byteLength || !N(new rn(e), new rn(n)));
+      case $:
+      case g:
+      case I:
+        return dn(+e, +n);
+      case L:
+        return e.name == n.name && e.message == n.message;
+      case P:
+      case k:
+        return e == n + "";
+      case X:
+        var K = gt;
+      case v:
+        var le = s & c;
+        if (K || (K = p), e.size != n.size && !le)
+          return !1;
+        var J = W.get(e);
+        if (J)
+          return J == n;
+        s |= h, W.set(e, n);
+        var we = Wt(K(e), K(n), s, R, N, W);
+        return W.delete(e), we;
+      case q:
+        if (qt)
+          return qt.call(e) == qt.call(n);
+    }
+    return !1;
+  }
+  function ar(e, n, a, s, R, N) {
+    var W = a & c, K = ut(e), le = K.length, J = ut(n), we = J.length;
+    if (le != we && !W)
+      return !1;
+    for (var Ie = le; Ie--; ) {
+      var ce = K[Ie];
+      if (!(W ? ce in n : Ve.call(n, ce)))
+        return !1;
+    }
+    var _e = N.get(e);
+    if (_e && N.get(n))
+      return _e == n;
+    var me = !0;
+    N.set(e, n), N.set(n, e);
+    for (var rt = W; ++Ie < le; ) {
+      ce = K[Ie];
+      var Je = e[ce], ct = n[ce];
+      if (s)
+        var Tr = W ? s(ct, Je, ce, n, e, N) : s(Je, ct, ce, e, n, N);
+      if (!(Tr === void 0 ? Je === ct || R(Je, ct, a, s, N) : Tr)) {
+        me = !1;
+        break;
+      }
+      rt || (rt = ce == "constructor");
+    }
+    if (me && !rt) {
+      var gn = e.constructor, mn = n.constructor;
+      gn != mn && "constructor" in e && "constructor" in n && !(typeof gn == "function" && gn instanceof gn && typeof mn == "function" && mn instanceof mn) && (me = !1);
+    }
+    return N.delete(e), N.delete(n), me;
+  }
+  function ut(e) {
+    return Ht(e, zt, lr);
+  }
+  function je(e, n) {
+    var a = e.__data__;
+    return ir(n) ? a[typeof n == "string" ? "string" : "hash"] : a.map;
+  }
+  function Ke(e, n) {
+    var a = tt(e, n);
+    return er(a) ? a : void 0;
+  }
+  function ze(e) {
+    var n = Ve.call(e, Pe), a = e[Pe];
+    try {
+      e[Pe] = void 0;
+      var s = !0;
+    } catch {
+    }
+    var R = nn.call(e);
+    return s && (n ? e[Pe] = a : delete e[Pe]), R;
+  }
+  var lr = _t ? function(e) {
+    return e == null ? [] : (e = Object(e), ht(_t(e), function(n) {
+      return wt.call(e, n);
+    }));
+  } : dr, Ue = st;
+  (Mt && Ue(new Mt(new ArrayBuffer(1))) != fe || it && Ue(new it()) != X || Rt && Ue(Rt.resolve()) != S || Ft && Ue(new Ft()) != v || Dt && Ue(new Dt()) != oe) && (Ue = function(e) {
+    var n = st(e), a = n == M ? e.constructor : void 0, s = a ? Se(a) : "";
+    if (s)
+      switch (s) {
+        case an:
+          return fe;
+        case Qe:
+          return X;
+        case Ln:
+          return S;
+        case Nn:
+          return v;
+        case En:
+          return oe;
+      }
+    return n;
+  });
+  function or(e, n) {
+    return n = n ?? d, !!n && (typeof e == "number" || b.test(e)) && e > -1 && e % 1 == 0 && e < n;
+  }
+  function ir(e) {
+    var n = typeof e;
+    return n == "string" || n == "number" || n == "symbol" || n == "boolean" ? e !== "__proto__" : e === null;
+  }
+  function sr(e) {
+    return !!tn && tn in e;
+  }
+  function ur(e) {
+    var n = e && e.constructor, a = typeof n == "function" && n.prototype || ue;
+    return e === a;
+  }
+  function cn(e) {
+    return nn.call(e);
+  }
+  function Se(e) {
+    if (e != null) {
+      try {
+        return Bt.call(e);
+      } catch {
+      }
+      try {
+        return e + "";
+      } catch {
+      }
+    }
+    return "";
+  }
+  function dn(e, n) {
+    return e === n || e !== e && n !== n;
+  }
+  var fn = sn(function() {
+    return arguments;
+  }()) ? sn : function(e) {
+    return He(e) && Ve.call(e, "callee") && !wt.call(e, "callee");
+  }, At = Array.isArray;
+  function Qt(e) {
+    return e != null && Kt(e.length) && !pn(e);
+  }
+  var Tt = jt || fr;
+  function cr(e, n) {
+    return un(e, n);
+  }
+  function pn(e) {
+    if (!hn(e))
+      return !1;
+    var n = st(e);
+    return n == D || n == B || n == A || n == V;
+  }
+  function Kt(e) {
+    return typeof e == "number" && e > -1 && e % 1 == 0 && e <= d;
+  }
+  function hn(e) {
+    var n = typeof e;
+    return e != null && (n == "object" || n == "function");
+  }
+  function He(e) {
+    return e != null && typeof e == "object";
+  }
+  var vn = We ? Gt(We) : tr;
+  function zt(e) {
+    return Qt(e) ? Yn(e) : nr(e);
+  }
+  function dr() {
+    return [];
+  }
+  function fr() {
+    return !1;
+  }
+  t.exports = cr;
+})($n, $n.exports);
+var cl = $n.exports;
+const It = /* @__PURE__ */ Ar(cl);
+var Sn = { exports: {} };
+Sn.exports;
+(function(t, r) {
+  var l = 200, u = "__lodash_hash_undefined__", c = 9007199254740991, h = "[object Arguments]", d = "[object Array]", o = "[object Boolean]", f = "[object Date]", A = "[object Error]", $ = "[object Function]", g = "[object GeneratorFunction]", L = "[object Map]", D = "[object Number]", B = "[object Object]", X = "[object Promise]", I = "[object RegExp]", U = "[object Set]", M = "[object String]", S = "[object Symbol]", V = "[object WeakMap]", P = "[object ArrayBuffer]", v = "[object DataView]", k = "[object Float32Array]", q = "[object Float64Array]", ee = "[object Int8Array]", oe = "[object Int16Array]", ie = "[object Int32Array]", fe = "[object Uint8Array]", pe = "[object Uint8ClampedArray]", re = "[object Uint16Array]", Y = "[object Uint32Array]", ye = /[\\^$.*+?()[\]{}|]/g, se = /\w*$/, Te = /^\[object .+?Constructor\]$/, Z = /^(?:0|[1-9]\d*)$/, _ = {};
+  _[h] = _[d] = _[P] = _[v] = _[o] = _[f] = _[k] = _[q] = _[ee] = _[oe] = _[ie] = _[L] = _[D] = _[B] = _[I] = _[U] = _[M] = _[S] = _[fe] = _[pe] = _[re] = _[Y] = !0, _[A] = _[$] = _[V] = !1;
+  var y = typeof Ge == "object" && Ge && Ge.Object === Object && Ge, m = typeof self == "object" && self && self.Object === Object && self, E = y || m || Function("return this")(), b = r && !r.nodeType && r, i = b && !0 && t && !t.nodeType && t, w = i && i.exports === b;
+  function T(e, n) {
+    return e.set(n[0], n[1]), e;
+  }
+  function O(e, n) {
+    return e.add(n), e;
+  }
+  function ae(e, n) {
+    for (var a = -1, s = e ? e.length : 0; ++a < s && n(e[a], a, e) !== !1; )
+      ;
+    return e;
+  }
+  function Ee(e, n) {
+    for (var a = -1, s = n.length, R = e.length; ++a < s; )
+      e[R + a] = n[a];
+    return e;
+  }
+  function $e(e, n, a, s) {
+    var R = -1, N = e ? e.length : 0;
+    for (s && N && (a = e[++R]); ++R < N; )
+      a = n(a, e[R], R, e);
+    return a;
+  }
+  function xe(e, n) {
+    for (var a = -1, s = Array(e); ++a < e; )
+      s[a] = n(a);
+    return s;
+  }
+  function pt(e, n) {
+    return e == null ? void 0 : e[n];
+  }
+  function We(e) {
+    var n = !1;
+    if (e != null && typeof e.toString != "function")
+      try {
+        n = !!(e + "");
+      } catch {
+      }
+    return n;
+  }
+  function ht(e) {
+    var n = -1, a = Array(e.size);
+    return e.forEach(function(s, R) {
+      a[++n] = [R, s];
+    }), a;
+  }
+  function et(e, n) {
+    return function(a) {
+      return e(n(a));
+    };
+  }
+  function vt(e) {
+    var n = -1, a = Array(e.size);
+    return e.forEach(function(s) {
+      a[++n] = s;
+    }), a;
+  }
+  var Vt = Array.prototype, Gt = Function.prototype, De = Object.prototype, tt = E["__core-js_shared__"], gt = function() {
+    var e = /[^.]+$/.exec(tt && tt.keys && tt.keys.IE_PROTO || "");
+    return e ? "Symbol(src)_1." + e : "";
+  }(), mt = Gt.toString, p = De.hasOwnProperty, j = De.toString, Q = RegExp(
+    "^" + mt.call(p).replace(ye, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
+  ), ue = w ? E.Buffer : void 0, yt = E.Symbol, Bt = E.Uint8Array, Ve = et(Object.getPrototypeOf, Object), tn = Object.create, nn = De.propertyIsEnumerable, kn = Vt.splice, Pt = Object.getOwnPropertySymbols, bt = ue ? ue.isBuffer : void 0, rn = et(Object.keys, Object), wt = je(E, "DataView"), lt = je(E, "Map"), Pe = je(E, "Promise"), _t = je(E, "Set"), jt = je(E, "WeakMap"), ot = je(Object, "create"), Mt = Se(wt), it = Se(lt), Rt = Se(Pe), Ft = Se(_t), Dt = Se(jt), nt = yt ? yt.prototype : void 0, an = nt ? nt.valueOf : void 0;
+  function Qe(e) {
+    var n = -1, a = e ? e.length : 0;
+    for (this.clear(); ++n < a; ) {
+      var s = e[n];
+      this.set(s[0], s[1]);
+    }
+  }
+  function Ln() {
+    this.__data__ = ot ? ot(null) : {};
+  }
+  function Nn(e) {
+    return this.has(e) && delete this.__data__[e];
+  }
+  function En(e) {
+    var n = this.__data__;
+    if (ot) {
+      var a = n[e];
+      return a === u ? void 0 : a;
+    }
+    return p.call(n, e) ? n[e] : void 0;
+  }
+  function ln(e) {
+    var n = this.__data__;
+    return ot ? n[e] !== void 0 : p.call(n, e);
+  }
+  function qt(e, n) {
+    var a = this.__data__;
+    return a[e] = ot && n === void 0 ? u : n, this;
+  }
+  Qe.prototype.clear = Ln, Qe.prototype.delete = Nn, Qe.prototype.get = En, Qe.prototype.has = ln, Qe.prototype.set = qt;
+  function ge(e) {
+    var n = -1, a = e ? e.length : 0;
+    for (this.clear(); ++n < a; ) {
+      var s = e[n];
+      this.set(s[0], s[1]);
+    }
+  }
+  function Vn() {
+    this.__data__ = [];
+  }
+  function Gn(e) {
+    var n = this.__data__, a = St(n, e);
+    if (a < 0)
+      return !1;
+    var s = n.length - 1;
+    return a == s ? n.pop() : kn.call(n, a, 1), !0;
+  }
+  function Bn(e) {
+    var n = this.__data__, a = St(n, e);
+    return a < 0 ? void 0 : n[a][1];
+  }
+  function Pn(e) {
+    return St(this.__data__, e) > -1;
+  }
+  function jn(e, n) {
+    var a = this.__data__, s = St(a, e);
+    return s < 0 ? a.push([e, n]) : a[s][1] = n, this;
+  }
+  ge.prototype.clear = Vn, ge.prototype.delete = Gn, ge.prototype.get = Bn, ge.prototype.has = Pn, ge.prototype.set = jn;
+  function be(e) {
+    var n = -1, a = e ? e.length : 0;
+    for (this.clear(); ++n < a; ) {
+      var s = e[n];
+      this.set(s[0], s[1]);
+    }
+  }
+  function Mn() {
+    this.__data__ = {
+      hash: new Qe(),
+      map: new (lt || ge)(),
+      string: new Qe()
+    };
+  }
+  function Rn(e) {
+    return ut(this, e).delete(e);
+  }
+  function Fn(e) {
+    return ut(this, e).get(e);
+  }
+  function Dn(e) {
+    return ut(this, e).has(e);
+  }
+  function qn(e, n) {
+    return ut(this, e).set(e, n), this;
+  }
+  be.prototype.clear = Mn, be.prototype.delete = Rn, be.prototype.get = Fn, be.prototype.has = Dn, be.prototype.set = qn;
+  function Oe(e) {
+    this.__data__ = new ge(e);
+  }
+  function Un() {
+    this.__data__ = new ge();
+  }
+  function Hn(e) {
+    return this.__data__.delete(e);
+  }
+  function Wn(e) {
+    return this.__data__.get(e);
+  }
+  function Qn(e) {
+    return this.__data__.has(e);
+  }
+  function Kn(e, n) {
+    var a = this.__data__;
+    if (a instanceof ge) {
+      var s = a.__data__;
+      if (!lt || s.length < l - 1)
+        return s.push([e, n]), this;
+      a = this.__data__ = new be(s);
+    }
+    return a.set(e, n), this;
+  }
+  Oe.prototype.clear = Un, Oe.prototype.delete = Hn, Oe.prototype.get = Wn, Oe.prototype.has = Qn, Oe.prototype.set = Kn;
+  function $t(e, n) {
+    var a = Qt(e) || At(e) ? xe(e.length, String) : [], s = a.length, R = !!s;
+    for (var N in e)
+      (n || p.call(e, N)) && !(R && (N == "length" || ir(N, s))) && a.push(N);
+    return a;
+  }
+  function on(e, n, a) {
+    var s = e[n];
+    (!(p.call(e, n) && fn(s, a)) || a === void 0 && !(n in e)) && (e[n] = a);
+  }
+  function St(e, n) {
+    for (var a = e.length; a--; )
+      if (fn(e[a][0], n))
+        return a;
+    return -1;
+  }
+  function qe(e, n) {
+    return e && Wt(n, zt(n), e);
+  }
+  function Ut(e, n, a, s, R, N, W) {
+    var K;
+    if (s && (K = N ? s(e, R, N, W) : s(e)), K !== void 0)
+      return K;
+    if (!He(e))
+      return e;
+    var le = Qt(e);
+    if (le) {
+      if (K = lr(e), !n)
+        return nr(e, K);
+    } else {
+      var J = ze(e), we = J == $ || J == g;
+      if (pn(e))
+        return Ct(e, n);
+      if (J == B || J == h || we && !N) {
+        if (We(e))
+          return N ? e : {};
+        if (K = Ue(we ? {} : e), !n)
+          return rr(e, qe(K, e));
+      } else {
+        if (!_[J])
+          return N ? e : {};
+        K = or(e, J, Ut, n);
+      }
+    }
+    W || (W = new Oe());
+    var Ie = W.get(e);
+    if (Ie)
+      return Ie;
+    if (W.set(e, K), !le)
+      var ce = a ? ar(e) : zt(e);
+    return ae(ce || e, function(_e, me) {
+      ce && (me = _e, _e = e[me]), on(K, me, Ut(_e, n, a, s, me, e, W));
+    }), K;
+  }
+  function zn(e) {
+    return He(e) ? tn(e) : {};
+  }
+  function Jn(e, n, a) {
+    var s = n(e);
+    return Qt(e) ? s : Ee(s, a(e));
+  }
+  function Xn(e) {
+    return j.call(e);
+  }
+  function Zn(e) {
+    if (!He(e) || ur(e))
+      return !1;
+    var n = Kt(e) || We(e) ? Q : Te;
+    return n.test(Se(e));
+  }
+  function Yn(e) {
+    if (!cn(e))
+      return rn(e);
+    var n = [];
+    for (var a in Object(e))
+      p.call(e, a) && a != "constructor" && n.push(a);
+    return n;
+  }
+  function Ct(e, n) {
+    if (n)
+      return e.slice();
+    var a = new e.constructor(e.length);
+    return e.copy(a), a;
+  }
+  function Ht(e) {
+    var n = new e.constructor(e.byteLength);
+    return new Bt(n).set(new Bt(e)), n;
+  }
+  function st(e, n) {
+    var a = n ? Ht(e.buffer) : e.buffer;
+    return new e.constructor(a, e.byteOffset, e.byteLength);
+  }
+  function sn(e, n, a) {
+    var s = n ? a(ht(e), !0) : ht(e);
+    return $e(s, T, new e.constructor());
+  }
+  function un(e) {
+    var n = new e.constructor(e.source, se.exec(e));
+    return n.lastIndex = e.lastIndex, n;
+  }
+  function xn(e, n, a) {
+    var s = n ? a(vt(e), !0) : vt(e);
+    return $e(s, O, new e.constructor());
+  }
+  function er(e) {
+    return an ? Object(an.call(e)) : {};
+  }
+  function tr(e, n) {
+    var a = n ? Ht(e.buffer) : e.buffer;
+    return new e.constructor(a, e.byteOffset, e.length);
+  }
+  function nr(e, n) {
+    var a = -1, s = e.length;
+    for (n || (n = Array(s)); ++a < s; )
+      n[a] = e[a];
+    return n;
+  }
+  function Wt(e, n, a, s) {
+    a || (a = {});
+    for (var R = -1, N = n.length; ++R < N; ) {
+      var W = n[R], K = s ? s(a[W], e[W], W, a, e) : void 0;
+      on(a, W, K === void 0 ? e[W] : K);
+    }
+    return a;
+  }
+  function rr(e, n) {
+    return Wt(e, Ke(e), n);
+  }
+  function ar(e) {
+    return Jn(e, zt, Ke);
+  }
+  function ut(e, n) {
+    var a = e.__data__;
+    return sr(n) ? a[typeof n == "string" ? "string" : "hash"] : a.map;
+  }
+  function je(e, n) {
+    var a = pt(e, n);
+    return Zn(a) ? a : void 0;
+  }
+  var Ke = Pt ? et(Pt, Object) : dr, ze = Xn;
+  (wt && ze(new wt(new ArrayBuffer(1))) != v || lt && ze(new lt()) != L || Pe && ze(Pe.resolve()) != X || _t && ze(new _t()) != U || jt && ze(new jt()) != V) && (ze = function(e) {
+    var n = j.call(e), a = n == B ? e.constructor : void 0, s = a ? Se(a) : void 0;
+    if (s)
+      switch (s) {
+        case Mt:
+          return v;
+        case it:
+          return L;
+        case Rt:
+          return X;
+        case Ft:
+          return U;
+        case Dt:
+          return V;
+      }
+    return n;
+  });
+  function lr(e) {
+    var n = e.length, a = e.constructor(n);
+    return n && typeof e[0] == "string" && p.call(e, "index") && (a.index = e.index, a.input = e.input), a;
+  }
+  function Ue(e) {
+    return typeof e.constructor == "function" && !cn(e) ? zn(Ve(e)) : {};
+  }
+  function or(e, n, a, s) {
+    var R = e.constructor;
+    switch (n) {
+      case P:
+        return Ht(e);
+      case o:
+      case f:
+        return new R(+e);
+      case v:
+        return st(e, s);
+      case k:
+      case q:
+      case ee:
+      case oe:
+      case ie:
+      case fe:
+      case pe:
+      case re:
+      case Y:
+        return tr(e, s);
+      case L:
+        return sn(e, s, a);
+      case D:
+      case M:
+        return new R(e);
+      case I:
+        return un(e);
+      case U:
+        return xn(e, s, a);
+      case S:
+        return er(e);
+    }
+  }
+  function ir(e, n) {
+    return n = n ?? c, !!n && (typeof e == "number" || Z.test(e)) && e > -1 && e % 1 == 0 && e < n;
+  }
+  function sr(e) {
+    var n = typeof e;
+    return n == "string" || n == "number" || n == "symbol" || n == "boolean" ? e !== "__proto__" : e === null;
+  }
+  function ur(e) {
+    return !!gt && gt in e;
+  }
+  function cn(e) {
+    var n = e && e.constructor, a = typeof n == "function" && n.prototype || De;
+    return e === a;
+  }
+  function Se(e) {
+    if (e != null) {
+      try {
+        return mt.call(e);
+      } catch {
+      }
+      try {
+        return e + "";
+      } catch {
+      }
+    }
+    return "";
+  }
+  function dn(e) {
+    return Ut(e, !0, !0);
+  }
+  function fn(e, n) {
+    return e === n || e !== e && n !== n;
+  }
+  function At(e) {
+    return cr(e) && p.call(e, "callee") && (!nn.call(e, "callee") || j.call(e) == h);
+  }
+  var Qt = Array.isArray;
+  function Tt(e) {
+    return e != null && hn(e.length) && !Kt(e);
+  }
+  function cr(e) {
+    return vn(e) && Tt(e);
+  }
+  var pn = bt || fr;
+  function Kt(e) {
+    var n = He(e) ? j.call(e) : "";
+    return n == $ || n == g;
+  }
+  function hn(e) {
+    return typeof e == "number" && e > -1 && e % 1 == 0 && e <= c;
+  }
+  function He(e) {
+    var n = typeof e;
+    return !!e && (n == "object" || n == "function");
+  }
+  function vn(e) {
+    return !!e && typeof e == "object";
+  }
+  function zt(e) {
+    return Tt(e) ? $t(e) : Yn(e);
+  }
+  function dr() {
+    return [];
+  }
+  function fr() {
+    return !1;
+  }
+  t.exports = dn;
+})(Sn, Sn.exports);
+var dl = Sn.exports;
+const fl = /* @__PURE__ */ Ar(dl), pl = Le({
+  name: "GaSelect",
+  components: {
+    GaInput: Pr,
+    GaPopup: Sr,
+    GaIcon: Fe
+  },
+  props: {
+    modelValue: {
+      type: [String, Number, null, Object],
+      default: null
+    },
+    name: {
+      type: String,
+      default: null
+    },
+    label: {
+      type: String,
+      default: null
+    },
+    tooltip: {
+      type: String,
+      default: null
+    },
+    disabled: {
+      type: Boolean,
+      default: !1
+    },
+    readonly: {
+      type: Boolean,
+      default: !1
+    },
+    placeholder: {
+      type: String,
+      default: "Выберите значение"
+    },
+    icon: {
+      type: String,
+      default: null
+    },
+    clearable: {
+      type: Boolean,
+      default: !0
+    },
+    options: {
+      type: Array,
+      default: () => []
+    },
+    optionLabel: {
+      type: String,
+      default: "title"
+    },
+    optionIdentity: {
+      type: String,
+      default: "id"
+    },
+    multiple: {
+      type: Boolean,
+      default: !1
+    },
+    searchable: {
+      type: Boolean,
+      default: !1
+    },
+    searchDebounce: {
+      type: Number,
+      default: 300
+    },
+    searchMethod: {
+      type: Function,
+      default: null
+    },
+    required: {
+      type: Boolean,
+      default: !1
+    },
+    validationRules: {
+      type: Array,
+      default: null
+    },
+    sortMethod: {
+      type: Function,
+      default: null
+    },
+    showFullValue: {
+      type: Boolean,
+      default: !1
+    }
+  },
+  emits: ["update:modelValue", "validate"],
+  setup(t, { slots: r, emit: l }) {
+    const {
+      name: u,
+      label: c,
+      tooltip: h,
+      disabled: d,
+      readonly: o,
+      icon: f,
+      clearable: A,
+      multiple: $,
+      required: g,
+      validationRules: L,
+      options: D,
+      optionLabel: B,
+      optionIdentity: X,
+      searchable: I,
+      searchDebounce: U,
+      searchMethod: M,
+      sortMethod: S,
+      showFullValue: V
+    } = Ze(t), P = wn(t, "modelValue", null), v = H(null), k = H(Ee(D.value)), q = H(!1), ee = H(!1), oe = H(), ie = H(), fe = H(), pe = te(u.value) ? u.value : Ye("ga-select"), re = G(() => Object.values(k.value).some((p) => p.isSelected)), Y = G(() => Object.values(k.value).filter((p) => p.isSelected)), ye = G(() => re.value ? $.value ? Y.value.map((p) => p.origin) : Y.value[0].origin : $.value ? [] : null), se = G(() => re.value ? $.value ? `Выбрано ${Y.value.length} шт.` : Y.value[0].label : null), Te = G(() => {
+      let p = Object.values(k.value);
+      return !M.value && te(v.value) && (p = p.filter(gt)), p.sort((j, Q) => ke(S.value) ? S.value(j, Q) : mt(j, Q));
+    }), Z = An(), _ = G(() => {
+      const p = [];
+      return g.value && p.push(Z.required), ke(L.value) && p.push(L.value), Array.isArray(L.value) && p.push(...L.value), p;
+    }), y = en(
+      P,
+      _,
+      pe,
+      l
+    ), m = G(() => ({
+      clearable: A.value,
+      focused: q.value,
+      disabled: d.value,
+      readonly: o.value,
+      "value-ellipsis": !V.value,
+      "with-icon": T.value,
+      "have-error": te(y.errorMessage.value)
+    })), E = G(() => {
+      var p, j;
+      return $.value ? Y.value.length === 0 ? Xe.emptyValuePlaceholder : Y.value.map((Q) => Q.label).join(", ") : ((j = (p = Y.value) == null ? void 0 : p[0]) == null ? void 0 : j.label) ?? Xe.emptyValuePlaceholder;
+    }), { labelVisible: b, labelVNode: i } = On(null, r, c, h, g), { errorsVNode: w } = xt(y.errorMessage), { hasIcon: T } = Cr(f), { showClearIcon: O } = Tn(A, P, d), ae = G(() => r == null ? void 0 : r.option);
+    de(D, (p) => {
+      if (Array.isArray(p)) {
+        const j = Ee(p);
+        It(k.value, j) || (k.value = j);
+      }
+    }), de(P, async (p) => {
+      if (!It(ye.value, p))
+        if ($.value) {
+          const j = (Array.isArray(p) ? p : []).map((Q) => $e(Q)).filter((Q) => Q !== null);
+          It(j, Y.value) || (await tt(), j.forEach((Q) => {
+            typeof k.value[Q.id] > "u" && (k.value[Q.id] = Q), k.value[Q.id].isSelected = !0;
+          }));
+        } else {
+          if (re.value) {
+            const j = Y.value[0].id;
+            k.value[j].isSelected = !1;
+          }
+          if (p !== null) {
+            const j = $e(p);
+            j && (typeof k.value[j.id] > "u" && (k.value[j.id] = j), k.value[j.id].isSelected = !0);
+          }
+        }
+    }), de(ye, async () => {
+      y.state.value.touched || y.setTouched(!0), y.state.value.dirty || y.setDirty(!0), await Or(), await y.validate();
+    }), de(Y, () => {
+      let p = $.value ? [] : null;
+      re.value && (p = Y.value.map((j) => j.origin), $.value || (p = (p == null ? void 0 : p[0]) || null)), l("update:modelValue", fl(p));
+    }), de(Te, (p, j) => {
+      p.length !== j.length && setTimeout(() => {
+        var Q;
+        return (Q = ie.value) == null ? void 0 : Q.calculatePosition();
+      }, 0);
+    }), Et(async () => {
+      ke(M.value) && await De();
+    });
+    function Ee(p) {
+      const j = {};
+      if (Array.isArray(p) && !ke(M.value) && p.forEach((Q) => {
+        const ue = $e(Q);
+        ue && (ue != null && ue.id) && (j[ue.id] = ue);
+      }), $.value && Array.isArray(P.value))
+        P.value.forEach((Q) => {
+          const ue = $e(Q);
+          ue !== null && (ue.isSelected = !0, j[ue.id] = ue);
+        });
+      else if (P.value !== null) {
+        const Q = $e(P.value);
+        Q !== null && (Q.isSelected = !0, j[Q.id] = Q);
+      }
+      return j;
+    }
+    function $e(p) {
+      switch (typeof p) {
+        case "object":
+          return p === null ? null : Array.isArray(p) ? (console.error(`GaSelect: Option must be string, number or object. Option - ${JSON.stringify(p)}`), null) : typeof (p == null ? void 0 : p[X.value]) > "u" ? (console.error(`GaSelect: Option identity "${X.value}" not found in option object`), null) : typeof (p == null ? void 0 : p[B.value]) > "u" ? (console.error(`GaSelect: Option label "${B.value}" not found in option object`), null) : {
+            id: String(p[X.value]),
+            label: String(p[B.value]),
+            origin: p
+          };
+        default:
+          return {
+            id: String(p),
+            label: String(p),
+            origin: p
+          };
+      }
+    }
+    function xe() {
+      k.value = Object.values(k.value).filter((p) => p.isSelected).reduce((p, j) => (p[j.id] = j, p), {});
+    }
+    async function pt() {
+      var p;
+      d.value || (y.state.value.touched || y.setTouched(!0), window.addEventListener("keydown", et), q.value = !0, I.value && (await Or(), (p = oe.value) == null || p.focus()));
+    }
+    function We() {
+      window.removeEventListener("keydown", et), q.value = !1;
+    }
+    function ht() {
+      v.value = null, ke(M.value) && xe();
+    }
+    function et(p) {
+      var j;
+      switch ((((j = p.target) == null ? void 0 : j.tagName) !== "INPUT" || p.key === "Enter") && p.preventDefault(), p.key) {
+        case "Escape":
+          We();
+          break;
+      }
+    }
+    async function vt(p) {
+      if ($.value)
+        k.value[p.id].isSelected = !k.value[p.id].isSelected, setTimeout(() => ie.value.calculatePosition());
+      else {
+        if (re.value) {
+          const j = Y.value[0].id;
+          k.value[j].isSelected = !1;
+        }
+        k.value[p.id].isSelected = !0, We();
+      }
+    }
+    async function Vt(p) {
+      d.value || (k.value[p.id].isSelected = !1);
+    }
+    const Gt = In(async (p) => {
+      v.value = p, ke(M.value) && await De();
+    }, U.value);
+    async function De() {
+      if (ke(M.value)) {
+        ee.value = !0, xe();
+        const p = await M.value(v.value);
+        Array.isArray(p) && p.forEach((j) => {
+          const Q = $e(j);
+          Q && typeof k.value[Q.id] > "u" && (k.value[Q.id] = Q);
+        }), ee.value = !1;
+      }
+    }
+    async function tt() {
+      Object.values(k.value).filter((p) => p.isSelected).forEach((p) => {
+        k.value[p.id].isSelected = !1;
+      }), ke(M.value) && await De(), setTimeout(ie.value.calculatePosition, 0);
+    }
+    function gt(p) {
+      return new RegExp(v.value, "i").test(p.label);
+    }
+    function mt(p, j) {
+      return p.label.localeCompare(j.label);
+    }
+    return {
+      componentId: pe,
+      hasValue: re,
+      valueList: Y,
+      optionList: Te,
+      controlClasses: m,
+      readonlyValue: E,
+      optionsVisible: q,
+      valueLabel: se,
+      searchInputRef: oe,
+      selectPopupRef: ie,
+      controlContentRef: fe,
+      labelVisible: b,
+      labelVNode: i,
+      errorsVNode: w,
+      hasIcon: T,
+      showClearIcon: O,
+      hasOptionSlot: ae,
+      searchValue: v,
+      isLoading: ee,
+      closeOptions: We,
+      openOptions: pt,
+      onOptionsPopupClose: ht,
+      onSearchInput: Gt,
+      onValueItemSelect: vt,
+      onValueItemRemove: Vt,
+      onClear: tt
+    };
+  }
+}), hl = {
+  key: 1,
+  class: "ga-control-readonly-content"
+}, vl = {
+  key: 3,
+  class: "ga-control-select-values"
+}, gl = ["title"], ml = {
+  key: "error_bag",
+  class: "error-bag"
+}, yl = {
+  key: 0,
+  class: "ga-select-options-loader"
+}, bl = ["onClick"], wl = {
+  key: 0,
+  class: "ga-select-options-item-checkbox"
+}, _l = { class: "ga-select-options-item-label" };
+function $l(t, r, l, u, c, h) {
+  const d = Ae("GaIcon"), o = Ae("GaInput"), f = Ae("GaPopup");
+  return C(), F("div", {
+    class: ve(["ga-control ga-control-select", t.controlClasses])
+  }, [
+    t.labelVisible ? (C(), x(Re(t.labelVNode), { key: 0 })) : z("", !0),
+    t.readonly ? (C(), F("div", hl, Ce(t.readonlyValue), 1)) : (C(), F("div", {
+      key: 2,
+      ref: "controlContentRef",
+      class: "ga-control-select-content",
+      onClick: r[0] || (r[0] = (...A) => t.openOptions && t.openOptions(...A))
+    }, [
+      t.hasIcon ? (C(), x(d, {
+        key: 0,
+        class: "ga-control-icon",
+        icon: t.icon
+      }, null, 8, ["icon"])) : z("", !0),
+      ne("div", {
+        class: ve(["ga-control-select-value", { "placeholder-visible": !t.hasValue }])
+      }, Ce(t.hasValue ? t.valueLabel : t.placeholder), 3),
+      t.showClearIcon ? (C(), x(d, {
+        key: 1,
+        icon: "close",
+        class: "ga-control-clear-icon",
+        onClick: ft(t.onClear, ["stop"])
+      }, null, 8, ["onClick"])) : z("", !0),
+      Me(d, {
+        class: "ga-control-select-expand",
+        icon: "dropdown"
+      })
+    ], 512)),
+    t.multiple && !t.readonly ? (C(), F("div", vl, [
+      (C(!0), F(Zt, null, Yt(t.valueList, (A) => (C(), F("div", {
+        key: "multiple_value_" + A.id,
+        class: "ga-control-select-values-item"
+      }, [
+        ne("div", {
+          class: "value-label",
+          title: A.label
+        }, Ce(A.label), 9, gl),
+        t.disabled ? z("", !0) : (C(), x(d, {
+          key: 0,
+          icon: "close",
+          class: "ga-control-clear-icon",
+          onClick: ($) => t.onValueItemRemove(A)
+        }, null, 8, ["onClick"]))
+      ]))), 128))
+    ])) : z("", !0),
+    t.errorsVNode && !t.readonly && !t.disabled ? (C(), F("div", ml, [
+      (C(), x(Re(t.errorsVNode)))
+    ])) : z("", !0),
+    Me(f, {
+      ref: "selectPopupRef",
+      class: "ga-select-popup",
+      name: t.componentId + "_popup",
+      target: t.controlContentRef,
+      visible: t.optionsVisible,
+      offset: 2,
+      "inherit-width": !0,
+      onClose: t.onOptionsPopupClose,
+      onClickOutside: t.closeOptions
+    }, {
+      default: _r(() => [
+        t.searchable ? (C(), x(o, {
+          key: 0,
+          ref: "searchInputRef",
+          "model-value": t.searchValue,
+          icon: "search",
+          placeholder: "Введите для поиска",
+          clearable: "",
+          "onUpdate:modelValue": t.onSearchInput
+        }, null, 8, ["model-value", "onUpdate:modelValue"])) : z("", !0),
+        ne("div", {
+          class: ve(["ga-select-options-wrapper", { "no-data": t.optionList.length === 0 }])
+        }, [
+          t.isLoading ? (C(), F("div", yl, r[1] || (r[1] = [
+            ne("span", { class: "preloader-block" }, null, -1)
+          ]))) : z("", !0),
+          t.optionList.length > 0 ? (C(!0), F(Zt, { key: 1 }, Yt(t.optionList, (A, $) => (C(), F("div", {
+            key: A == null ? void 0 : A.id,
+            class: ve(["ga-select-options-item", { selected: A == null ? void 0 : A.isSelected, multiple: t.multiple }]),
+            onClick: (g) => t.onValueItemSelect(A)
+          }, [
+            Be(t.$slots, "option", {
+              option: A,
+              index: $
+            }, () => [
+              t.multiple ? (C(), F("div", wl, [
+                A.isSelected ? (C(), x(d, {
+                  key: 0,
+                  icon: "check-mark"
+                })) : z("", !0)
+              ])) : z("", !0),
+              ne("div", _l, Ce(A == null ? void 0 : A.label), 1)
+            ])
+          ], 10, bl))), 128)) : Be(t.$slots, "no-data", { key: 2 }, () => [
+            r[2] || (r[2] = kt("Нет данных"))
+          ])
+        ], 2)
+      ]),
+      _: 3
+    }, 8, ["name", "target", "visible", "onClose", "onClickOutside"])
+  ], 2);
+}
+const Sl = /* @__PURE__ */ Ne(pl, [["render", $l]]), Cl = Le({
+  name: "GaTabs",
+  props: {
+    /**
+     * Активная вкладка
+     */
+    activeTab: {
+      type: Object,
+      default: null
+    },
+    tabs: {
+      type: Array,
+      required: !0
+    },
+    view: {
+      type: String,
+      default: "horizontal"
+    }
+  },
+  emits: [
+    /**
+     * Изменение активной вкладки
+     *
+     * @event update:active-tab
+     * @type {IGaTab | null}
+     */
+    "update:active-tab"
+  ],
+  setup(t, { emit: r, slots: l }) {
+    const u = wn(t, "activeTab", null), c = wn(t, "tabs", []), h = H(null), d = G(() => {
+      const $ = [];
+      return c.value.map((g, L) => {
+        switch (typeof g) {
+          case "string":
+          case "number":
+            $.push({
+              index: L,
+              title: g,
+              origin: g,
+              component: null,
+              props: {},
+              emits: {},
+              disabled: !1
+            });
+            break;
+          case "object":
+            g !== null && !Array.isArray(g) && $.push({
+              ...g,
+              index: L,
+              title: g.title,
+              origin: g,
+              component: (g == null ? void 0 : g.component) ?? null,
+              props: (g == null ? void 0 : g.props) ?? {},
+              emits: (g == null ? void 0 : g.emits) ?? {},
+              disabled: (g == null ? void 0 : g.disabled) ?? !1
+            });
+            break;
+        }
+      }), $;
+    }), o = G(
+      () => d.value.find(($) => $.index === h.value) ?? null
+    ), f = G(() => d.value.some(($) => !!$.component));
+    de(u, ($) => {
+      if ($) {
+        const g = d.value.findIndex((L) => It($, L.origin));
+        g > -1 && (h.value = g);
+      }
+    }), Et(() => {
+      if (u.value) {
+        const $ = d.value.find((g) => It(u.value, g.origin));
+        $ && A($);
+      } else
+        d.value.length > 0 && A(d.value[0]);
+    });
+    function A($) {
+      $.disabled || (h.value = $.index, r("update:active-tab", $.origin));
+    }
+    return {
+      activeTabFormatted: o,
+      tabsFormatted: d,
+      changeTab: A,
+      isComponentsInProps: f
+    };
+  }
+}), Al = { class: "ga-tabs-header" }, Tl = {
+  key: 0,
+  class: "ga-tabs-header-item ga-tabs-header-prefix"
+}, Ol = ["onClick"], Il = { class: "ga-tabs-content" };
+function kl(t, r, l, u, c, h) {
+  var d;
+  return t.activeTabFormatted ? (C(), F("article", {
+    key: 0,
+    class: ve(["ga-tabs", t.view])
+  }, [
+    ne("header", Al, [
+      (d = t.$slots) != null && d["tab-title-prefix"] ? (C(), F("div", Tl, [
+        Be(t.$slots, "tab-title-prefix")
+      ])) : z("", !0),
+      (C(!0), F(Zt, null, Yt(t.tabsFormatted, (o, f) => (C(), F("div", {
+        key: "tab_title_" + o.index,
+        class: ve(["ga-tabs-header-item", { active: t.activeTabFormatted.index === f, disabled: o.disabled }]),
+        onClick: (A) => t.changeTab(o)
+      }, [
+        Be(t.$slots, "tab-title", {
+          tab: o.origin,
+          tabInner: o
+        }),
+        kt(" " + Ce(o.title), 1)
+      ], 10, Ol))), 128))
+    ]),
+    ne("div", Il, [
+      t.isComponentsInProps && t.activeTabFormatted.component ? (C(), x(Kr, { key: 0 }, [
+        (C(), x(Re(t.activeTabFormatted.component), bn({
+          key: t.activeTabFormatted.index
+        }, t.activeTabFormatted.props, zr(t.activeTabFormatted.emits)), null, 16))
+      ], 1024)) : Be(t.$slots, "default", {
+        key: 1,
+        activeTab: t.activeTabFormatted.origin,
+        activeTabInner: t.activeTabFormatted
+      }, () => [
+        r[0] || (r[0] = ne("div", { class: "no-data" }, "Нет данных", -1))
+      ])
+    ])
+  ], 2)) : z("", !0);
+}
+const Ll = /* @__PURE__ */ Ne(Cl, [["render", kl]]), Nl = Le({
+  name: "GaTextarea",
+  components: { GaIcon: Fe },
+  props: {
+    /**
+     * Редактируемое значение, может быть строкой или null
+     * Пустая строка ('') автоматически приводится к null
+     */
+    modelValue: {
+      type: String,
+      default: null
+    },
+    /**
+     * Уникальное имя контрола, будет в атрибуте attr-autotest и в качестве id для textarea
+     */
+    name: {
+      type: String,
+      default: null
+    },
+    /**
+     * Название контрола. Если передан слот label, то этот пропс игнорируется
+     */
+    label: {
+      type: String,
+      default: null
+    },
+    /**
+     * Подсказка контрола, отрисовывается сразу после названия в виде кружка с вопросом
+     */
+    tooltip: {
+      type: String,
+      default: null
+    },
+    /**
+     * CSS-свойство для управления возможностью изменять размер textarea. По умолчанию отключено
+     */
+    resize: {
+      type: String,
+      default: "none"
+    },
+    /**
+     * Количество строк с которыми должна отрисовываться textarea
+     */
+    rows: {
+      type: Number,
+      default: 3
+    },
+    /**
+     * Отключение контрола. Если передан true - ввод данных будет недоступен
+     */
+    disabled: {
+      type: Boolean,
+      default: !1
+    },
+    /**
+     * Режим чтения. Если передан true - будет отображаться только название контрола и его значение в текстовом виде.
+     * Если значение отсутствует - используется переменная GaUiStorage.defaultValuePlaceholder
+     */
+    readonly: {
+      type: Boolean,
+      default: !1
+    },
+    /**
+     * Текст внутри контрола пока не указано значение
+     */
+    placeholder: {
+      type: String,
+      default: null
+    },
+    /**
+     * Показывать иконку очистки если есть значение, по умолчанию включено
+     */
+    clearable: {
+      type: Boolean,
+      default: !0
+    },
+    /**
+     * Встроенная валидация значения - обязательное заполнение
+     * Если передан true - рисует красную звёздочку после названия контрола
+     */
+    required: {
+      type: Boolean,
+      default: !1
+    },
+    /**
+     * Встроенная валидация значения - минимальная длина текста, длина текстового значения должна быть длинее или равна указанному
+     */
+    minLength: {
+      type: [Number, String],
+      default: null
+    },
+    /**
+     * Встроенная валидация значения - максимальная длина текста, длина текстового значения должна быть меньше или равна указанному
+     */
+    maxLength: {
+      type: [Number, String],
+      default: null
+    },
+    /**
+     * Функции валидации значения. Можно передать одну функцию, можно передать массив значений.
+     * Функция должна быть ассинхронной (т.е. должна возвращать Promis), принимает в качестве аргумента значние контрола,
+     * должна вернуть текст ошибки в случае ошибки или null
+     */
+    validationRules: {
+      type: Array,
+      default: null
+    },
+    /**
+     * Поскольку валидация запускается после ввода данных, сделана небольшая задержка с помощью функции debounce.
+     * По умолчанию в качестве значения используется переменная GaUiStorage.defaultDebounceInput
+     * Значение задержки передается в миллисекундах, т.е. если нужно задержка в 1 секунду - нужно передать 1000
+     */
+    debounceInput: {
+      type: Number,
+      default: 200
+    }
+  },
+  emits: [
+    /**
+     * Изменение значения
+     *
+     * @event update:modelValue
+     * @type {String | null}
+     */
+    "update:modelValue",
+    /**
+     * Установка фокуса на контроле
+     *
+     * @event update:modelValue
+     * @type {Event}
+     */
+    "focus",
+    /**
+     * Потеря фокуса контролом
+     *
+     * @event update:modelValue
+     * @type {Event}
+     */
+    "blur",
+    /**
+     * Результат валидации значения контрола, стреляет после каждой валидации
+     *
+     * @event update:modelValue
+     * @type {{componentId: string, value: string | null, valid: boolean}}
+     * @property {string} componentId
+     */
+    "validate"
+  ],
+  setup(t, { emit: r, slots: l }) {
+    const {
+      modelValue: u,
+      name: c,
+      label: h,
+      tooltip: d,
+      resize: o,
+      disabled: f,
+      readonly: A,
+      clearable: $,
+      required: g,
+      minLength: L,
+      maxLength: D,
+      validationRules: B,
+      debounceInput: X
+    } = Ze(t), I = H(t.modelValue), U = H(!1), M = te(c.value) ? c.value : Ye("ga-textarea"), S = Lt(L), V = Lt(D), P = G(() => {
+      const Z = An({
+        minLength: S.value,
+        maxLength: V.value
+      }), _ = [];
+      return g.value && _.push(Z.required), he(S.value) && _.push(Z.minLength), he(V.value) && _.push(Z.maxLength), ke(B.value) && _.push(B.value), Array.isArray(B.value) && _.push(...B.value), _;
+    }), v = en(I, P, M, r), k = G(() => ({
+      clearable: $.value,
+      focused: U.value,
+      disabled: f.value,
+      readonly: A.value,
+      "have-error": !A.value && te(v.errorMessage.value)
+    })), q = G(() => ({ resize: o.value })), ee = G(() => I.value ?? Xe.emptyValuePlaceholder), { labelVisible: oe, labelVNode: ie } = On(M, l, h, d, g), { errorsVNode: fe } = xt(v.errorMessage), { showClearIcon: pe } = Tn($, I, f);
+    de(u, (Z) => {
+      Z !== I.value && (I.value = Z ?? null);
+    }), de(I, () => {
+      r("update:modelValue", I.value);
+    });
+    const re = G(() => In(async (Z) => {
+      I.value = Z, await v.validate();
+    }, X.value));
+    function Y(Z) {
+      var y;
+      v.state.value.dirty || v.setDirty(!0);
+      const _ = te((y = Z == null ? void 0 : Z.target) == null ? void 0 : y.value) ? Z.target.value : null;
+      re.value(_);
+    }
+    function ye() {
+      if (!f.value)
+        re.value(null);
+      else
+        return;
+    }
+    function se(Z) {
+      v.state.value.touched || v.setTouched(!0), U.value = !0, r("focus", Z);
+    }
+    function Te(Z) {
+      U.value = !1, r("blur", Z);
+    }
+    return {
+      componentId: M,
+      controlClasses: k,
+      readonlyValue: ee,
+      labelVisible: oe,
+      labelVNode: ie,
+      errorsVNode: fe,
+      showClearIcon: pe,
+      modelValueLocal: I,
+      textareaStyle: q,
+      handleChange: re,
+      onInput: Y,
+      onBlur: Te,
+      onFocus: se,
+      onClear: ye
+    };
+  }
+}), El = ["attr-autotest"], Vl = {
+  key: 1,
+  class: "ga-control-readonly-content"
+}, Gl = {
+  key: 2,
+  class: "ga-control-textarea-content"
+}, Bl = ["id", "value", "placeholder", "disabled", "rows"], Pl = {
+  key: "error-bag",
+  class: "error-bag"
+};
+function jl(t, r, l, u, c, h) {
+  const d = Ae("GaIcon");
+  return C(), F("div", {
+    class: ve(["ga-control ga-control-textarea", t.controlClasses]),
+    "attr-autotest": t.componentId
+  }, [
+    t.labelVisible ? (C(), x(Re(t.labelVNode), { key: 0 })) : z("", !0),
+    t.readonly ? (C(), F("div", Vl, Ce(t.readonlyValue), 1)) : (C(), F("div", Gl, [
+      ne("textarea", {
+        id: t.componentId,
+        value: t.modelValueLocal,
+        placeholder: t.placeholder,
+        disabled: t.disabled,
+        rows: t.rows,
+        style: gr(t.textareaStyle),
+        autocomplete: "off",
+        onInput: r[0] || (r[0] = (...o) => t.onInput && t.onInput(...o)),
+        onBlur: r[1] || (r[1] = ft((...o) => t.onBlur && t.onBlur(...o), ["stop"])),
+        onFocus: r[2] || (r[2] = ft((...o) => t.onFocus && t.onFocus(...o), ["stop"]))
+      }, null, 44, Bl),
+      t.showClearIcon ? (C(), x(d, {
+        key: 0,
+        icon: "close",
+        class: "ga-control-clear-icon",
+        onClick: t.onClear
+      }, null, 8, ["onClick"])) : z("", !0)
+    ])),
+    t.errorsVNode && !t.readonly && !t.disabled ? (C(), F("div", Pl, [
+      (C(), x(Re(t.errorsVNode)))
+    ])) : z("", !0)
+  ], 10, El);
+}
+const Ml = /* @__PURE__ */ Ne(Nl, [["render", jl]]), Rl = Le({
+  name: "GaPagination",
+  components: { GaIcon: Fe },
+  props: {
+    pagination: {
+      type: Object,
+      default: null
+    },
+    /** Уникальное имя, будет в атрибутах id и attr-autotest */
+    name: {
+      type: String,
+      default: null
+    },
+    theme: {
+      type: String,
+      default: "minimal"
+    },
+    interval: {
+      type: Number,
+      default: 5,
+      validate: (t) => t % 2 > 0
+    }
+  },
+  emits: ["update:pagination"],
+  setup(t, { emit: r }) {
+    const { pagination: l, interval: u, name: c } = Ze(t), h = H(l.value ?? { limit: 1, offset: 0, total: 0 }), d = te(c.value) ? c.value : Ye("ga-pagination");
+    de(l, (S) => {
+      It(h.value, S) || (h.value = S, B());
+    });
+    const o = H({
+      current: null,
+      next: null,
+      previous: null,
+      total: null
+    }), f = G(() => o.value.previous === null), A = G(() => o.value.next === null), $ = G(() => {
+      const { offset: S, total: V, limit: P } = l.value;
+      if (V === 0)
+        return 0;
+      const v = S + 1, k = V <= P ? V : S + P;
+      return `${v}-${k} из ${V}`;
+    }), g = G(() => {
+      const { current: S, total: V } = o.value, P = u.value;
+      if (V !== null && V <= P + 2)
+        return new Array(V).fill(null).map((k, q) => ({
+          pageNumber: q + 1,
+          name: q + 1
+        }));
+      const v = [
+        {
+          pageNumber: 1,
+          name: 1
+        }
+      ];
+      if (S !== null && S <= P)
+        v.push(
+          ...new Array(P - 1).fill(null).map((k, q) => ({
+            pageNumber: q + 2,
+            name: q + 2
+          }))
+        ), v.push({
+          pageNumber: P + 1,
+          name: "..."
+        });
+      else if (S !== null && V !== null && S > V - P)
+        v.push({
+          pageNumber: V - P,
+          name: "..."
+        }), v.push(
+          ...new Array(P - 1).fill(null).map((k, q) => ({
+            pageNumber: V + (q - P) + 1,
+            name: V + (q - P) + 1
+          }))
+        );
+      else if (S !== null) {
+        const k = (P - 1) / 2;
+        v.push(
+          ...new Array(P + 2).fill(null).map((q, ee) => {
+            const oe = ee === 0 || ee === P + 1 ? "..." : S + (ee - k - 1);
+            return {
+              pageNumber: S + (ee - k - 1),
+              name: oe
+            };
+          })
+        );
+      }
+      return v.push({
+        pageNumber: V,
+        name: V
+      }), v;
+    });
+    Et(() => {
+      B();
+    });
+    const L = G(() => h.value.offset);
+    de(L, (S) => {
+      S !== h.value.offset && B();
+    });
+    const D = G(() => h.value.limit);
+    de(D, (S) => {
+      S !== h.value.limit && (B(), M());
+    });
+    const B = () => {
+      const { limit: S, offset: V, total: P } = h.value, v = { ...o.value };
+      v.total = P / S > 1 ? Math.ceil(P / S) : 1, V === 0 ? (v.current = 1, v.previous = null, v.next = P / S > 1 ? 2 : null) : (v.current = Math.ceil(V / S) + 1, v.previous = v.current - 1 > 0 ? v.current - 1 : null, v.next = P - v.current * S > 0 ? v.current + 1 : null), o.value = v;
+    }, X = () => {
+      o.value.current !== null && o.value.total !== null && o.value.current + 1 <= o.value.total && (o.value.current = o.value.current + 1), M();
+    }, I = () => {
+      o.value.current !== null && o.value.current - 1 > 0 && (o.value.current -= 1), M();
+    }, U = (S) => {
+      const V = { ...o.value };
+      V.total !== null && (V.current = !Number.isNaN(S) && S > 0 && S <= V.total ? S : 1, o.value = V, M());
+    }, M = () => {
+      const S = { ...h.value }, V = o.value.current;
+      V === 1 ? S.offset = 0 : V !== null && (S.offset = h.value.limit * (V - 1) === h.value.total ? h.value.limit * (V - 2) : h.value.limit * (V - 1)), S.limit = h.value.limit, r("update:pagination", S);
+    };
+    return {
+      props: t,
+      emit: r,
+      page: o,
+      componentId: d,
+      previousDisabled: f,
+      nextDisabled: A,
+      currentInterval: $,
+      pageButtons: g,
+      calculatePages: B,
+      nextPage: X,
+      previousPage: I,
+      onPageSelect: U,
+      calculatePagination: M
+    };
+  }
+}), Fl = ["id", "attr-autotest"], Dl = {
+  key: 0,
+  class: "minimal"
+}, ql = { class: "pagination-button" }, Ul = { class: "pages body-regular" }, Hl = { key: 1 }, Wl = { class: "ga-pagination" }, Ql = ["onClick"];
+function Kl(t, r, l, u, c, h) {
+  const d = Ae("GaIcon");
+  return C(), F("div", {
+    class: ve([t.theme]),
+    id: t.componentId,
+    "attr-autotest": t.componentId
+  }, [
+    t.theme === "full" ? (C(), F("div", Dl, [
+      ne("div", ql, [
+        Me(d, {
+          icon: "arrow-left",
+          size: "14",
+          class: "prev-button",
+          onClick: t.previousPage
+        }, null, 8, ["onClick"]),
+        Me(d, {
+          icon: "arrow-left",
+          onClick: t.previousPage
+        }, null, 8, ["onClick"]),
+        ne("div", Ul, [
+          kt(Ce(t.page.current) + " ", 1),
+          r[0] || (r[0] = ne("div", { class: "separator" }, "из", -1)),
+          kt(" " + Ce(t.page.total), 1)
+        ]),
+        Me(d, {
+          icon: "arrow-right",
+          size: "14",
+          class: "next-button",
+          onClick: t.nextPage
+        }, null, 8, ["onClick"])
+      ])
+    ])) : z("", !0),
+    t.theme === "minimal" ? (C(), F("div", Hl, [
+      ne("div", Wl, [
+        Me(d, {
+          icon: "arrow-left",
+          size: "14",
+          class: "ga-pagination-button",
+          onClick: t.previousPage
+        }, null, 8, ["onClick"]),
+        (C(!0), F(Zt, null, Yt(t.pageButtons, (o, f) => (C(), F("div", {
+          key: f,
+          class: ve([
+            "ga-pagination-page",
+            "body-regular",
+            { selected: o.pageNumber === t.page.current, overflow: o.name === "..." }
+          ]),
+          onClick: (A) => t.onPageSelect(o.pageNumber)
+        }, Ce(o.name), 11, Ql))), 128)),
+        Me(d, {
+          icon: "arrow-right",
+          size: "14",
+          class: "ga-pagination-button",
+          onClick: t.nextPage
+        }, null, 8, ["onClick"])
+      ])
+    ])) : z("", !0)
+  ], 10, Fl);
+}
+const zl = /* @__PURE__ */ Ne(Rl, [["render", Kl]]), Nt = H({
+  list: []
+}), jr = G(() => Nt.value.list);
+function Mr(t) {
+  return {
+    ...t,
+    route: t.route,
+    id: Nt.value.list.length + 1,
+    parent: Nt.value.list.length ?? null
+  };
+}
+function Jl(t) {
+  Nt.value.list = Array.from(t).map(Mr);
+}
+function Xl(t) {
+  Nt.value.list.push(Mr(t));
+}
+function vr() {
+  Nt.value.list.pop();
+}
+function Zl() {
+  return {
+    breadcrumbs: jr
+  };
+}
+function io(t) {
+  const r = t ?? { popOnDeactivated: !0, popOnUnmounted: !0 };
+  return r.popOnDeactivated && Jr(() => {
+    vr();
+  }), r.popOnUnmounted && wr(() => {
+    vr();
+  }), {
+    breadcrumbs: jr,
+    setState: Jl,
+    push: Xl,
+    pop: vr
+  };
+}
+const Yl = Le({
+  name: "GaBreadcrumbs",
+  components: { GaIcon: Fe },
+  props: {
+    /** Уникальное имя, будет в атрибутах id и attr-autotest */
+    name: {
+      type: String,
+      default: null
+    }
+  },
+  setup(t) {
+    const { name: r } = Ze(t), { breadcrumbs: l } = Zl(), u = te(r.value) ? r.value : Ye("ga-breadcrumbs");
+    return {
+      breadcrumbs: l,
+      componentId: u
+    };
+  }
+}), xl = ["id", "attr-autotest"], eo = ["title"], to = ["title"];
+function no(t, r, l, u, c, h) {
+  const d = Ae("router-link"), o = Ae("GaIcon");
+  return C(), F("ul", {
+    id: t.componentId,
+    class: "ga-breadcrumbs",
+    "attr-autotest": t.componentId
+  }, [
+    (C(!0), F(Zt, null, Yt(t.breadcrumbs, (f, A) => (C(), F("li", {
+      key: A,
+      class: ve({ "ga-breadcrumbs__item": !0, "ga-breadcrumbs__last-item": t.breadcrumbs.length - 1 === A })
+    }, [
+      t.breadcrumbs.length - 1 === A ? Be(t.$slots, "item-last", bn({
+        key: 0,
+        ref_for: !0
+      }, { crumb: f, index: A }), () => [
+        ne("span", {
+          title: f.title
+        }, Ce(f.title), 9, eo)
+      ]) : Be(t.$slots, "item-link", bn({
+        key: 1,
+        ref_for: !0
+      }, { crumb: f, index: A }), () => [
+        f.route ? (C(), x(d, {
+          key: 0,
+          to: f.route,
+          class: "ga-breadcrumbs__link",
+          title: f.title
+        }, {
+          default: _r(() => [
+            kt(Ce(f.title), 1)
+          ]),
+          _: 2
+        }, 1032, ["to", "title"])) : (C(), F("span", {
+          key: 1,
+          title: f.title
+        }, Ce(f.title), 9, to))
+      ]),
+      t.breadcrumbs.length - 1 > A ? Be(t.$slots, "separator", { key: 2 }, () => [
+        Me(o, {
+          icon: "arrow-right",
+          size: "10",
+          class: "ga-breadcrumbs__separator"
+        })
+      ]) : z("", !0)
+    ], 2))), 128))
+  ], 8, xl);
+}
+const ro = /* @__PURE__ */ Ne(Yl, [["render", no]]), Lr = {
+  GaButton: la,
+  GaCheckbox: Aa,
+  GaIcon: Fe,
+  GaInput: Pr,
+  GaInputNumber: al,
+  GaLoader: ul,
+  GaPopup: Sr,
+  GaSelect: Sl,
+  GaTabs: Ll,
+  GaTextarea: Ml,
+  GaTooltip: Gr,
+  GaBreadcrumbs: ro,
+  GaPagination: zl
+}, so = {
+  install(t, r) {
+    Object.assign(Xe, r ?? {}), r != null && r.registerComponentsGlobal && Object.keys(Lr).forEach((l) => {
+      t.component(String(l), Lr[l]);
+    });
+  }
+}, Nr = {
+  baseUrl: "",
+  headers: {}
+};
+class Cn {
+  constructor(r) {
+    Ot(this, "_options", { ...Nr });
+    Ot(this, "_middlewaresRequest", []);
+    Ot(this, "_middlewaresResponse", []);
+    Ot(this, "_abortControllers", /* @__PURE__ */ new Map());
+    Ot(this, "_middlewaresQuery", []);
+    r && this.setOptions(r);
+  }
+  get _hasMiddlewaresRequest() {
+    return this._middlewaresRequest.length > 0;
+  }
+  get _hasMiddlewaresResponse() {
+    return this._middlewaresResponse.length > 0;
+  }
+  get _hasMiddlewaresQuery() {
+    return this._middlewaresQuery.length > 0;
+  }
+  setOptions(r) {
+    const { request: l, response: u, query: c } = (r == null ? void 0 : r.middleware) ?? {};
+    this._middlewaresRequest = Array.isArray(l) ? [...l] : [], this._middlewaresResponse = Array.isArray(u) ? [...u] : [], this._middlewaresQuery = Array.isArray(c) ? [...c] : [];
+    const h = { ...r };
+    delete h.middleware, this._options = Object.assign({}, Nr, h);
+  }
+  get(r, l) {
+    return this.request({
+      method: "get",
+      path: r,
+      query: l
+    });
+  }
+  post(r, l, u) {
+    return this.request({
+      method: "post",
+      path: r,
+      body: l,
+      query: u
+    });
+  }
+  put(r, l, u) {
+    return this.request({
+      method: "put",
+      path: r,
+      body: l,
+      query: u
+    });
+  }
+  patch(r, l, u) {
+    return this.request({
+      method: "patch",
+      path: r,
+      body: l,
+      query: u
+    });
+  }
+  delete(r, l, u) {
+    return this.request({
+      method: "delete",
+      path: r,
+      body: l,
+      query: u
+    });
+  }
+  request(r) {
+    return this._fetch(r);
+  }
+  abort(r) {
+    var l;
+    (l = this._abortControllers.get(r)) == null || l.abort();
+  }
+  setHeader(r, l) {
+    this._options.headers[r] = l;
+  }
+  removeHeader(r) {
+    this._options.headers[r] && delete this._options.headers[r];
+  }
+  _fetch(r) {
+    const { abortController: l, request: u } = this._prepareRequest(r), c = new Promise((h, d) => {
+      fetch(u.url, u.options).then((o) => {
+        this._abortControllers.delete(c), r.returnRaw ? h(o) : this._prepareResponse(o).then((f) => {
+          f.error === null ? h(f.data) : d(f.error);
+        });
+      }).catch((o) => {
+        throw this._abortControllers.delete(c), new Error(o.message);
+      });
+    });
+    return this._abortControllers.set(c, l), c;
+  }
+  _prepareRequest(r) {
+    const { baseUrl: l, path: u, query: c, method: h, body: d, headers: o, timeout: f, keepalive: A } = r;
+    let $ = {
+      url: this._prepareUrl(l, u, c),
+      options: {
+        method: h.toUpperCase()
+      }
+    };
+    A && ($.options.keepalive = A);
+    const g = Cn._createAbortionController(f ?? this._options.timeout);
+    $.options.signal = g.signal, ["mode", "credentials", "cache", "redirect", "referrer", "referrerPolicy", "integrity"].forEach((B) => {
+      r.hasOwnProperty(B) ? $.options[B] = r[B] : this._options.hasOwnProperty(B) && ($.options[B] = this._options[B]);
+    });
+    const L = pr(o) ? { ...this._options.headers, ...o } : this._options.headers, D = Cn._prepareBody(d ?? null);
+    return D.isJSON && (L["Content-Type"] = "application/json"), $.options.body = D.payload, $.options.headers = L, this._hasMiddlewaresRequest && ($ = this._middlewaresRequest.reduce((B, X) => X(B), $)), {
+      abortController: g,
+      request: $
+    };
+  }
+  async _prepareResponse(r) {
+    var u;
+    let l = {
+      raw: r,
+      data: null,
+      error: null
+    };
+    if (l.raw.ok) {
+      const c = ((u = r.headers.get("Content-Type")) == null ? void 0 : u.toLowerCase()) || "";
+      c.indexOf("text/html") >= 0 || c.indexOf("text/plain") >= 0 ? l.data = await r.text() : c.indexOf("application/json") >= 0 ? l.data = await r.json() : c.indexOf("multipart/form-data") >= 0 ? l.data = await r.formData() : l.data = await r.blob();
+    } else
+      l.error = r.statusText;
+    return this._hasMiddlewaresResponse && (l = this._middlewaresResponse.reduce((c, h) => h(c), l)), l;
+  }
+  static _prepareBody(r) {
+    const l = pr(r) || Array.isArray(r);
+    return {
+      isJSON: l,
+      payload: l ? JSON.stringify(r) : r
+    };
+  }
+  _prepareUrl(r, l, u) {
+    let c = te(r) ? r : this._options.baseUrl;
+    te(l) && (c += l);
+    const h = this._convertQuery(u);
+    return te(h) && (c += `?${h}`), c;
+  }
+  static _createAbortionController(r) {
+    const l = new AbortController();
+    return he(r) && setTimeout(() => l.abort(), r), l;
+  }
+  _convertQuery(r) {
+    if (!pr(r))
+      return null;
+    const l = this._hasMiddlewaresQuery ? this._middlewaresQuery.reduce((h, d) => d(h), r) : { ...r }, u = new URLSearchParams();
+    function c(h, d) {
+      he(d) || oa(d) ? u.set(h, d.toString()) : _n(d) ? u.set(h, d) : d === null && u.set(h, "null");
+    }
+    return Object.keys(l).forEach((h) => {
+      if (Array.isArray(l[h])) {
+        const d = `${h}[]`;
+        l[h].forEach((o) => c(d, o));
+      } else
+        c(h, l[h]);
+    }), u.toString();
+  }
+}
+const br = new Cn(), uo = {
+  install(t, r) {
+    br.setOptions(r), t.config.globalProperties.$http = br;
+  }
+};
+function co() {
+  return br;
+}
+export {
+  ro as GaBreadcrumbs,
+  la as GaButton,
+  Aa as GaCheckbox,
+  uo as GaHttpPlugin,
+  Fe as GaIcon,
+  Pr as GaInput,
+  al as GaInputNumber,
+  ul as GaLoader,
+  zl as GaPagination,
+  Sr as GaPopup,
+  Sl as GaSelect,
+  Ll as GaTabs,
+  Ml as GaTextarea,
+  Gr as GaTooltip,
+  so as GaUiPlugin,
+  oa as isBoolean,
+  ke as isFunction,
+  he as isNumber,
+  pr as isObject,
+  _n as isString,
+  te as notEmptyString,
+  yn as unrefAny,
+  Ye as useComponentId,
+  io as useGaBreadcrumbs,
+  oo as useGaFormValidation,
+  co as useGaHttp
+};

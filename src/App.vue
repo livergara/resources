@@ -9,6 +9,5 @@ import Header from './layouts/Header.vue'
   <RouterView />
 </template>
 
-<style lang="scss" scoped>
-
+<style lang="scss">
 </style>

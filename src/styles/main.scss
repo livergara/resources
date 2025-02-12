@@ -1,14 +1,26 @@
-
+@use './elements.scss';
+@use './variables.scss';
 
 *{
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 html{
     height: 100vh;
     font-family: 'Times New Roman', Times, serif;
 
-    #app{
-        padding: 35px;
+    body{
+        margin: 0px;
+
+        main{
+            padding: 35px;
+    
+            h1{
+                color: #003274;
+                font-size: 36px;
+            }
+        }
     }
 }

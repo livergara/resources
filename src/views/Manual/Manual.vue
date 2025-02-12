@@ -1,15 +1,15 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 
-export default defineComponent ({
+export default defineComponent({
 
 })
 </script>
 
 <template>
-    <h1>Справочник</h1>
+    <div class="main-container">
+        <h1>Справочник</h1>
+    </div>
 </template>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>
